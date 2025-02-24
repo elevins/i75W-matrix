@@ -18,6 +18,7 @@ jobs:
     env:
       CI_PROJECT_ROOT: ${{ github.workspace }}/src-${{ github.sha }}
       CI_BUILD_ROOT: ${{ github.workspace }}
+      CI_USE_ENV: 1
       CMAKE_C_COMPILER_LAUNCHER: ccache
       CMAKE_CXX_COMPILER_LAUNCHER: ccache
 
