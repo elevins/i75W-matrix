@@ -1,48 +1,74 @@
 #include "pico/stdlib.h"
+#include "hardware/gpio.h"
 
 #include "libraries/pico_graphics/pico_graphics.hpp"
 #include "libraries/interstate75/interstate75.hpp"
 
 using namespace pimoroni;
 
+// GPIO pin definitions
+#define ENCODER_A_PIN 19
+#define ENCODER_B_PIN 21
+#define ENCODER_SW_PIN 20
+#define TILT_SWITCH_PIN 26
 
-// Display size in pixels, note: the i75W RP2350 kit includes two 128x64
-// pixel displays which form a chain that's 256x64 pixels in side.
-Hub75 hub75(256, 64, nullptr, PANEL_GENERIC, false);
+// Display size for 64x32 HUB75 panel
+Hub75 hub75(64, 32, nullptr, PANEL_GENERIC, false);
 
-// Our PicoGraphics surface. If we want a square output then use 128x128
-// as the width and height, which Hub75 will automatically remap to 256x64.
-PicoGraphics_PenRGB888 graphics(128, 128, nullptr);
+// PicoGraphics surface for 64x32 display
+PicoGraphics_PenRGB888 graphics(64, 32, nullptr);
 
-// extra row of pixels for sourcing flames and averaging
-const int buffer_zone = 4;
-const int width = 128;
-const int height = 128 + buffer_zone;
+// Display dimensions
+const int width = 64;
+const int height = 32;
 
-// a buffer that's at least big enough to store width + 2 * height values 
-// (to accommodate both horizontal and vertical orientation)
-float heat[width * height] = {0.0f};
+// Global variables for input handling
+volatile int encoder_pos = 0;
+volatile bool encoder_pressed = false;
+volatile bool tilt_active = false;
 
-// Bounds checked "set" and "get" methods so we can process our frame
-// without having to worry about fetching/setting pixels out of bounds.
-void set(int x, int y, float v) {
-  x = x < 0 ? 0 : x;
-  x = x >= width ? width - 1 : x;
-  
-  y = y < 0 ? 0 : y;
-  y = y >= height ? height - 1 : y;
+// Encoder state tracking
+static int last_a = 0;
+static int last_b = 0;
 
-  heat[x + y * width] = v;
+// GPIO interrupt handler for rotary encoder
+void encoder_interrupt(uint gpio, uint32_t events) {
+    int a = gpio_get(ENCODER_A_PIN);
+    int b = gpio_get(ENCODER_B_PIN);
+    
+    if (gpio == ENCODER_A_PIN || gpio == ENCODER_B_PIN) {
+        if (a != last_a) {
+            if (a != b) {
+                encoder_pos++;
+            } else {
+                encoder_pos--;
+            }
+        }
+        last_a = a;
+        last_b = b;
+    }
+    
+    if (gpio == ENCODER_SW_PIN && events & GPIO_IRQ_EDGE_FALL) {
+        encoder_pressed = !encoder_pressed;
+    }
+    
+    if (gpio == TILT_SWITCH_PIN) {
+        tilt_active = !gpio_get(TILT_SWITCH_PIN);
+    }
 }
 
-float get(int x, int y) {
-  x = x < 0 ? 0 : x;
-  x = x >= width ? width - 1 : x;
-  
-  y = y < 0 ? 0 : y;
-  y = y >= height ? height - 1 : y;
+// Function to rotate coordinates 180 degrees for upside-down display
+Point rotate_180(int x, int y) {
+    return Point(width - 1 - x, height - 1 - y);
+}
 
-  return heat[x + y * width];
+// Safe pixel drawing with 180-degree rotation
+void draw_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b) {
+    if (x >= 0 && x < width && y >= 0 && y < height) {
+        graphics.set_pen(r, g, b);
+        Point rotated = rotate_180(x, y);
+        graphics.pixel(rotated);
+    }
 }
 
 // Interrupt callback required function 
@@ -52,63 +78,91 @@ void __isr dma_complete() {
 
 
 int main() {
-  //stdio_init_all();
+    stdio_init_all();
 
-  // Start hub75 driver
-  hub75.start(dma_complete);
+    // Initialize GPIO pins
+    gpio_init(ENCODER_A_PIN);
+    gpio_init(ENCODER_B_PIN);
+    gpio_init(ENCODER_SW_PIN);
+    gpio_init(TILT_SWITCH_PIN);
+    
+    gpio_set_dir(ENCODER_A_PIN, GPIO_IN);
+    gpio_set_dir(ENCODER_B_PIN, GPIO_IN);
+    gpio_set_dir(ENCODER_SW_PIN, GPIO_IN);
+    gpio_set_dir(TILT_SWITCH_PIN, GPIO_IN);
+    
+    gpio_pull_up(ENCODER_A_PIN);
+    gpio_pull_up(ENCODER_B_PIN);
+    gpio_pull_up(ENCODER_SW_PIN);
+    gpio_pull_up(TILT_SWITCH_PIN);
 
-  while(true) {
+    // Set up GPIO interrupts
+    gpio_set_irq_enabled_with_callback(ENCODER_A_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &encoder_interrupt);
+    gpio_set_irq_enabled(ENCODER_B_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(ENCODER_SW_PIN, GPIO_IRQ_EDGE_FALL, true);
+    gpio_set_irq_enabled(TILT_SWITCH_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
 
-    for(int y = 0; y < height; y++) {
-      for(int x = 0; x < width; x++) {
-        float value = get(x, y);
+    // Initialize encoder state
+    last_a = gpio_get(ENCODER_A_PIN);
+    last_b = gpio_get(ENCODER_B_PIN);
 
-        // Only draw the visible pixels,
-        // The two extra bottom rows are for seeding flames
-        if(y < height - buffer_zone) {
-          if(value > 0.5f) {
-            graphics.set_pen(255, 255, 180);
-          }
-          else if(value > 0.4f) {
-            graphics.set_pen(220, 160, 0);
-          }
-          else if(value > 0.3f) {
-            graphics.set_pen(180, 30, 0);
-          }
-          else if(value > 0.22f) {
-            graphics.set_pen(20, 20, 20);
-          } else {
-            graphics.set_pen(0, 0, 0);
-          }
-          graphics.pixel(Point(x, y));
+    // Start hub75 driver
+    hub75.start(dma_complete);
+
+    // Main variables
+    int cursor_x = width / 2;
+    int cursor_y = height / 2;
+    static int last_encoder_pos = 0;
+
+    while(true) {
+        // Clear screen
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+
+        // Handle encoder position changes
+        if (encoder_pos != last_encoder_pos) {
+            int delta = encoder_pos - last_encoder_pos;
+            cursor_x += delta;
+            
+            // Wrap cursor around screen edges
+            if (cursor_x < 0) cursor_x = width - 1;
+            if (cursor_x >= width) cursor_x = 0;
+            
+            last_encoder_pos = encoder_pos;
         }
 
-        // update this pixel by averaging the below pixels
-        float average = (get(x, y) + get(x, y + 2) + get(x, y + 1) + get(x - 1, y + 1) + get(x + 1, y + 1)) / 5.0f;
+        // Draw cursor (changes color based on tilt switch)
+        if (tilt_active) {
+            draw_pixel(cursor_x, cursor_y, 255, 0, 0); // Red when tilted
+        } else {
+            draw_pixel(cursor_x, cursor_y, 0, 255, 0); // Green when not tilted
+        }
 
-        // damping factor to ensure flame tapers out towards the top of the displays
-        average *= 0.99f;
+        // Draw a border around the screen
+        for (int x = 0; x < width; x++) {
+            draw_pixel(x, 0, 128, 128, 128);
+            draw_pixel(x, height - 1, 128, 128, 128);
+        }
+        for (int y = 0; y < height; y++) {
+            draw_pixel(0, y, 128, 128, 128);
+            draw_pixel(width - 1, y, 128, 128, 128);
+        }
 
-        // update the heat map with our newly averaged value
-        set(x, y, average);
-      }
+        // Draw some text info (basic pattern)
+        if (encoder_pressed) {
+            // Draw a cross pattern when button is pressed
+            for (int i = 0; i < width; i++) {
+                draw_pixel(i, height / 2, 0, 0, 255);
+            }
+            for (int i = 0; i < height; i++) {
+                draw_pixel(width / 2, i, 0, 0, 255);
+            }
+        }
+
+        // Update display
+        hub75.update(&graphics);
+        sleep_ms(50);
     }
 
-    hub75.update(&graphics);
-
-    // clear the bottom row and then add a new fire seed to it
-    for(int x = 0; x < width; x++) {
-      set(x, height - 1, 0.0f);
-    }
-
-    // add a new random heat source
-    for(int c = 0; c < 5; c++) {
-      int px = (rand() % (width - 4)) + 2;
-      set(px, height - 1, 10.0f);
-    }
-
-    sleep_ms(10);
-  }
-
-  return 0;
+    return 0;
 }
