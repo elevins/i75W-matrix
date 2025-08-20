@@ -26,11 +26,11 @@ void WeatherApp::initialize_mock_data() {
     
     // Mock forecast data - 5 days for weekly view
     forecast_data = {
-        {"NYC", 75, 68, 82, 55, 10, "02d", "6:46", "7:31", "Partly cloudy", "Mon"},
-        {"NYC", 73, 66, 80, 65, 25, "10d", "6:47", "7:30", "Light rain", "Tue"},
-        {"NYC", 71, 64, 77, 70, 40, "04d", "6:48", "7:29", "Cloudy", "Wed"},
-        {"NYC", 69, 62, 75, 45, 5, "01d", "6:49", "7:28", "Clear", "Thu"},
-        {"NYC", 74, 67, 81, 50, 15, "03d", "6:50", "7:27", "Scattered clouds", "Fri"}
+        {"NYC", 75, 68, 82, 55, 10, "02d", "6:46", "7:31", "Partly cloudy", "MON"},
+        {"NYC", 73, 66, 80, 65, 25, "10d", "6:47", "7:30", "Light rain", "TUE"},
+        {"NYC", 71, 64, 77, 70, 40, "04d", "6:48", "7:29", "Cloudy", "WED"},
+        {"NYC", 69, 62, 75, 45, 5, "01d", "6:49", "7:28", "Clear", "THU"},
+        {"NYC", 74, 67, 81, 50, 15, "03d", "6:50", "7:27", "Scattered clouds", "FRI"}
     };
 }
 
@@ -80,16 +80,16 @@ void WeatherApp::draw_current_weather(bool is_horizontal) {
         // Vertical layout (32x64) - Weekly forecast view
         for (int i = 0; i < 5 && i < forecast_data.size(); i++) {
             int y_day = 2 + (i * 12);    // Day name position
-            int y_temp = y_day + 8;      // Temperature position
+            int y_temp = y_day + 6;      // Temperature position (reduced gap from 8 to 6)
             
-            // Draw day name in white using vertical rotation
-            draw_text_white_mode(1, y_day, forecast_data[i].day_name, RotationMode::VERTICAL_CLOCKWISE);
+            // Draw day name in white using vertical rotation (moved 1 pixel right)
+            draw_text_white_mode(2, y_day, forecast_data[i].day_name, RotationMode::VERTICAL_CLOCKWISE);
             
-            // Draw low temperature in blue using vertical rotation
-            draw_text_blue_mode(2, y_temp, std::to_string(forecast_data[i].min_temp), RotationMode::VERTICAL_CLOCKWISE);
+            // Draw low temperature in blue using vertical rotation (moved slightly right)
+            draw_text_blue_mode(13, y_temp, std::to_string(forecast_data[i].min_temp), RotationMode::VERTICAL_CLOCKWISE);
             
-            // Draw high temperature in red using vertical rotation
-            draw_text_red_mode(12, y_temp, std::to_string(forecast_data[i].max_temp), RotationMode::VERTICAL_CLOCKWISE);
+            // Draw high temperature in red using vertical rotation (moved slightly right)
+            draw_text_red_mode(23, y_temp, std::to_string(forecast_data[i].max_temp), RotationMode::VERTICAL_CLOCKWISE);
         }
     }
 }
