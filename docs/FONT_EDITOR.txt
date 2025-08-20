@@ -1,0 +1,676 @@
+# Bitmap Font Editor - ASCII Characters 32-126
+# Edit the patterns below using X for pixel ON, . for pixel OFF
+# Each character is 3 pixels wide, 5 pixels tall
+# Format: X = pixel on, . = pixel off
+
+# SPACE (ASCII 32)
+Row 1: ...
+Row 2: ...
+Row 3: ...
+Row 4: ...
+Row 5: ...
+
+# ! (ASCII 33)
+Row 1: .X.
+Row 2: .X.
+Row 3: .X.
+Row 4: ...
+Row 5: .X.
+
+# " (ASCII 34)
+Row 1: X.X
+Row 2: X.X
+Row 3: ...
+Row 4: ...
+Row 5: ...
+
+# # (ASCII 35)
+Row 1: X.X
+Row 2: XXX
+Row 3: X.X
+Row 4: XXX
+Row 5: X.X
+
+# $ (ASCII 36)
+Row 1: .XX
+Row 2: X..
+Row 3: .X.
+Row 4: ..X
+Row 5: XX.
+
+# % (ASCII 37)
+Row 1: X.X
+Row 2: ..X
+Row 3: .X.
+Row 4: X..
+Row 5: X.X
+
+# & (ASCII 38)
+Row 1: XX.
+Row 2: X..
+Row 3: XXX
+Row 4: X..
+Row 5: XXX
+
+# ' (ASCII 39)
+Row 1: .X.
+Row 2: .X.
+Row 3: ...
+Row 4: ...
+Row 5: ...
+
+# ( (ASCII 40)
+Row 1: .X.
+Row 2: X..
+Row 3: X..
+Row 4: X..
+Row 5: .X.
+
+# ) (ASCII 41)
+Row 1: X..
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: X..
+
+# * (ASCII 42)
+Row 1: .X.
+Row 2: XXX
+Row 3: .X.
+Row 4: X.X
+Row 5: ...
+
+# + (ASCII 43)
+Row 1: ...
+Row 2: .X.
+Row 3: XXX
+Row 4: .X.
+Row 5: ...
+
+# , (ASCII 44)
+Row 1: ...
+Row 2: ...
+Row 3: ...
+Row 4: .X.
+Row 5: .X.
+
+# - (ASCII 45)
+Row 1: ...
+Row 2: ...
+Row 3: XXX
+Row 4: ...
+Row 5: ...
+
+# . (ASCII 46)
+Row 1: ...
+Row 2: ...
+Row 3: ...
+Row 4: ...
+Row 5: .X.
+
+# / (ASCII 47)
+Row 1: ..X
+Row 2: .X.
+Row 3: .X.
+Row 4: X..
+Row 5: X..
+
+# 0 (ASCII 48)
+Row 1: XXX
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# 1 (ASCII 49)
+Row 1: XX.
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: XXX
+
+# 2 (ASCII 50)
+Row 1: XXX
+Row 2: ..X
+Row 3: XXX
+Row 4: X..
+Row 5: XXX
+
+# 3 (ASCII 51)
+Row 1: XXX
+Row 2: ..X
+Row 3: XXX
+Row 4: ..X
+Row 5: XXX
+
+# 4 (ASCII 52)
+Row 1: X.X
+Row 2: X.X
+Row 3: XXX
+Row 4: ..X
+Row 5: ..X
+
+# 5 (ASCII 53)
+Row 1: XXX
+Row 2: X..
+Row 3: XXX
+Row 4: ..X
+Row 5: XXX
+
+# 6 (ASCII 54)
+Row 1: XXX
+Row 2: X..
+Row 3: XXX
+Row 4: X.X
+Row 5: XXX
+
+# 7 (ASCII 55)
+Row 1: XXX
+Row 2: X.X
+Row 3: ..X
+Row 4: ..X
+Row 5: ..X
+
+# 8 (ASCII 56)
+Row 1: XXX
+Row 2: X.X
+Row 3: XXX
+Row 4: X.X
+Row 5: XXX
+
+# 9 (ASCII 57)
+Row 1: XXX
+Row 2: X.X
+Row 3: XXX
+Row 4: ..X
+Row 5: XXX
+
+# : (ASCII 58)
+Row 1: ...
+Row 2: .X.
+Row 3: ...
+Row 4: .X.
+Row 5: ...
+
+# ; (ASCII 59)
+Row 1: ...
+Row 2: .X.
+Row 3: ...
+Row 4: .X.
+Row 5: .X.
+
+# < (ASCII 60)
+Row 1: ..X
+Row 2: .X.
+Row 3: X..
+Row 4: .X.
+Row 5: ..X
+
+# = (ASCII 61)
+Row 1: ...
+Row 2: XXX
+Row 3: ...
+Row 4: XXX
+Row 5: ...
+
+# > (ASCII 62)
+Row 1: X..
+Row 2: .X.
+Row 3: ..X
+Row 4: .X.
+Row 5: X..
+
+# ? (ASCII 63)
+Row 1: XXX
+Row 2: ..X
+Row 3: .XX
+Row 4: ...
+Row 5: .X.
+
+# @ (ASCII 64)
+Row 1: XXX
+Row 2: X.X
+Row 3: X.X
+Row 4: X..
+Row 5: XXX
+
+# A (ASCII 65)
+Row 1: XXX
+Row 2: X.X
+Row 3: XXX
+Row 4: X.X
+Row 5: X.X
+
+# B (ASCII 66)
+Row 1: XXX
+Row 2: X.X
+Row 3: XX.
+Row 4: X.X
+Row 5: XXX
+
+# C (ASCII 67)
+Row 1: XXX
+Row 2: X..
+Row 3: X..
+Row 4: X..
+Row 5: XXX
+
+# D (ASCII 68)
+Row 1: XX.
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: XX.
+
+# E (ASCII 69)
+Row 1: XXX
+Row 2: X..
+Row 3: XXX
+Row 4: X..
+Row 5: XXX
+
+# F (ASCII 70)
+Row 1: XXX
+Row 2: X..
+Row 3: XXX
+Row 4: X..
+Row 5: X..
+
+# G (ASCII 71)
+Row 1: XXX
+Row 2: X..
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# H (ASCII 72)
+Row 1: X.X
+Row 2: X.X
+Row 3: XXX
+Row 4: X.X
+Row 5: X.X
+
+# I (ASCII 73)
+Row 1: XXX
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: XXX
+
+# J (ASCII 74)
+Row 1: ..X
+Row 2: ..X
+Row 3: ..X
+Row 4: X.X
+Row 5: XXX
+
+# K (ASCII 75)
+Row 1: X.X
+Row 2: X.X
+Row 3: XX.
+Row 4: X.X
+Row 5: X.X
+
+# L (ASCII 76)
+Row 1: X..
+Row 2: X..
+Row 3: X..
+Row 4: X..
+Row 5: XXX
+
+# M (ASCII 77)
+Row 1: X.X
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: X.X
+
+# N (ASCII 78)
+Row 1: XXX
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: X.X
+
+# O (ASCII 79)
+Row 1: XXX
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# P (ASCII 80)
+Row 1: XXX
+Row 2: X.X
+Row 3: XXX
+Row 4: X..
+Row 5: X..
+
+# Q (ASCII 81)
+Row 1: XXX
+Row 2: X.X
+Row 3: X.X
+Row 4: XX.
+Row 5: X.X
+
+# R (ASCII 82)
+Row 1: XXX
+Row 2: X.X
+Row 3: XX.
+Row 4: X.X
+Row 5: X.X
+
+# S (ASCII 83)
+Row 1: XXX
+Row 2: X..
+Row 3: XXX
+Row 4: ..X
+Row 5: XXX
+
+# T (ASCII 84)
+Row 1: XXX
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: .X.
+
+# U (ASCII 85)
+Row 1: X.X
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# V (ASCII 86)
+Row 1: X.X
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: .X.
+
+# W (ASCII 87)
+Row 1: X.X
+Row 2: X.X
+Row 3: X.X
+Row 4: XXX
+Row 5: X.X
+
+# X (ASCII 88)
+Row 1: X.X
+Row 2: X.X
+Row 3: .X.
+Row 4: X.X
+Row 5: X.X
+
+# Y (ASCII 89)
+Row 1: X.X
+Row 2: X.X
+Row 3: .X.
+Row 4: .X.
+Row 5: .X.
+
+# Z (ASCII 90)
+Row 1: XXX
+Row 2: ..X
+Row 3: .X.
+Row 4: X..
+Row 5: XXX
+
+# [ (ASCII 91)
+Row 1: XX.
+Row 2: X..
+Row 3: X..
+Row 4: X..
+Row 5: XX.
+
+# \ (ASCII 92)
+Row 1: X..
+Row 2: .X.
+Row 3: .X.
+Row 4: ..X
+Row 5: ..X
+
+# ] (ASCII 93)
+Row 1: XX.
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: XX.
+
+# ^ (ASCII 94)
+Row 1: .X.
+Row 2: X.X
+Row 3: ...
+Row 4: ...
+Row 5: ...
+
+# _ (ASCII 95)
+Row 1: ...
+Row 2: ...
+Row 3: ...
+Row 4: ...
+Row 5: XXX
+
+# ` (ASCII 96)
+Row 1: X..
+Row 2: .X.
+Row 3: ...
+Row 4: ...
+Row 5: ...
+
+# a (ASCII 97)
+Row 1: ...
+Row 2: .XX
+Row 3: X.X
+Row 4: X.X
+Row 5: .XX
+
+# b (ASCII 98)
+Row 1: X..
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# c (ASCII 99)
+Row 1: ...
+Row 2: XXX
+Row 3: X..
+Row 4: X..
+Row 5: XXX
+
+# d (ASCII 100)
+Row 1: ..X
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# e (ASCII 101)
+Row 1: ...
+Row 2: .XX
+Row 3: X.X
+Row 4: XX.
+Row 5: .XX
+
+# f (ASCII 102)
+Row 1: ..X
+Row 2: .X.
+Row 3: XXX
+Row 4: .X.
+Row 5: .X.
+
+# g (ASCII 103)
+Row 1: ...
+Row 2: XX.
+Row 3: X.X
+Row 4: .XX
+Row 5: XX.
+
+# h (ASCII 104)
+Row 1: X..
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: X.X
+
+# i (ASCII 105)
+Row 1: .X.
+Row 2: ...
+Row 3: .X.
+Row 4: .X.
+Row 5: XXX
+
+# j (ASCII 106)
+Row 1: .X.
+Row 2: ...
+Row 3: .X.
+Row 4: .X.
+Row 5: XX.
+
+# k (ASCII 107)
+Row 1: X..
+Row 2: X.X
+Row 3: XX.
+Row 4: X.X
+Row 5: X.X
+
+# l (ASCII 108)
+Row 1: XX.
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: .XX
+
+# m (ASCII 109)
+Row 1: ...
+Row 2: X.X
+Row 3: XXX
+Row 4: X.X
+Row 5: X.X
+
+# n (ASCII 110)
+Row 1: ...
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: X.X
+
+# o (ASCII 111)
+Row 1: ...
+Row 2: XXX
+Row 3: X.X
+Row 4: X.X
+Row 5: XXX
+
+# p (ASCII 112)
+Row 1: ...
+Row 2: XXX
+Row 3: X.X
+Row 4: XXX
+Row 5: X..
+
+# q (ASCII 113)
+Row 1: ...
+Row 2: XXX
+Row 3: X.X
+Row 4: XXX
+Row 5: ..X
+
+# r (ASCII 114)
+Row 1: ...
+Row 2: XXX
+Row 3: X..
+Row 4: X..
+Row 5: X..
+
+# s (ASCII 115)
+Row 1: ...
+Row 2: .XX
+Row 3: XX.
+Row 4: .XX
+Row 5: XX.
+
+# t (ASCII 116)
+Row 1: ...
+Row 2: .X.
+Row 3: XXX
+Row 4: .X.
+Row 5: .XX
+
+# u (ASCII 117)
+Row 1: ...
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: .XX
+
+# v (ASCII 118)
+Row 1: ...
+Row 2: X.X
+Row 3: X.X
+Row 4: X.X
+Row 5: .X.
+
+# w (ASCII 119)
+Row 1: ...
+Row 2: X.X
+Row 3: X.X
+Row 4: XXX
+Row 5: X.X
+
+# x (ASCII 120)
+Row 1: ...
+Row 2: X.X
+Row 3: .X.
+Row 4: X.X
+Row 5: X.X
+
+# y (ASCII 121)
+Row 1: ...
+Row 2: X.X
+Row 3: X.X
+Row 4: XXX
+Row 5: ..X
+
+# z (ASCII 122)
+Row 1: ...
+Row 2: XXX
+Row 3: .XX
+Row 4: X..
+Row 5: XXX
+
+# { (ASCII 123)
+Row 1: .XX
+Row 2: .X.
+Row 3: XX.
+Row 4: .X.
+Row 5: .XX
+
+# | (ASCII 124)
+Row 1: .X.
+Row 2: .X.
+Row 3: .X.
+Row 4: .X.
+Row 5: .X.
+
+# } (ASCII 125)
+Row 1: XX.
+Row 2: .X.
+Row 3: .XX
+Row 4: .X.
+Row 5: XX.
+
+# ~ (ASCII 126)
+Row 1: ...
+Row 2: ..X
+Row 3: XXX
+Row 4: X..
+Row 5: ...
+
+# Instructions:
+# 1. Edit any character patterns above using X for ON pixels, . for OFF pixels
+# 2. Save this file
+# 3. Tell Claude "Update font from FONT_EDITOR.txt" and I'll convert your changes to C code
+# 4. Each character is exactly 3 pixels wide, 5 pixels tall
+# 5. Keep the ASCII comments and row labels - only change the X and . patterns

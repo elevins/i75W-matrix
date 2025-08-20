@@ -17,10 +17,18 @@ set(CMAKE_CXX_STANDARD 17)
 # Initialize the SDK
 pico_sdk_init()
 
-# Add your source files
+# Add your source files with organized structure
 add_executable(${NAME}
-    src/main.cpp # <-- Add source files here!
+    src/core/main.cpp
+    src/core/common.cpp
+    src/apps/WeatherApp.cpp
+    src/apps/StockApp.cpp
+    src/apps/CryptoApp.cpp
+    src/utils/text_renderer.cpp
 )
+
+# Add lwIP config directory
+target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
@@ -29,6 +37,7 @@ include(common/pimoroni_bus)
 include(libraries/pico_graphics/pico_graphics)
 include(libraries/pico_vector/pico_vector)
 include(libraries/interstate75/interstate75)
+include(libraries/pngdec/pngdec)
 
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
@@ -38,6 +47,7 @@ target_link_libraries(${NAME}
     pimoroni_i2c
     pico_graphics
     pico_vector
+    pngdec
     hardware_pwm
 )
 
