@@ -20,14 +20,17 @@ void WeatherApp::initialize_mock_data() {
         "01d",          // icon_code (clear day)
         "6:45",         // sunrise
         "7:32",         // sunset
-        "Clear skies"   // description
+        "Clear skies",  // description
+        "Today"         // day_name
     };
     
-    // Mock forecast data
+    // Mock forecast data - 5 days for weekly view
     forecast_data = {
-        {"NYC", 75, 68, 82, 55, 10, "02d", "6:46", "7:31", "Partly cloudy"},
-        {"NYC", 73, 66, 80, 65, 25, "10d", "6:47", "7:30", "Light rain"},
-        {"NYC", 71, 64, 77, 70, 40, "04d", "6:48", "7:29", "Cloudy"}
+        {"NYC", 75, 68, 82, 55, 10, "02d", "6:46", "7:31", "Partly cloudy", "Mon"},
+        {"NYC", 73, 66, 80, 65, 25, "10d", "6:47", "7:30", "Light rain", "Tue"},
+        {"NYC", 71, 64, 77, 70, 40, "04d", "6:48", "7:29", "Cloudy", "Wed"},
+        {"NYC", 69, 62, 75, 45, 5, "01d", "6:49", "7:28", "Clear", "Thu"},
+        {"NYC", 74, 67, 81, 50, 15, "03d", "6:50", "7:27", "Scattered clouds", "Fri"}
     };
 }
 
@@ -74,20 +77,20 @@ void WeatherApp::draw_current_weather(bool is_horizontal) {
         ::draw_weather_icon(42, 1, current_weather.icon_code, rotate);
         
     } else {
-        // Vertical layout (32x64) using bitmap text
-        draw_text_yellow(1, 1, "WEATHER", rotate);
-        
-        // Current temperature
-        draw_text_white(1, 10, std::to_string(current_weather.current_temp) + "F", rotate);
-        
-        // Min-max range
-        draw_text_white(1, 19, std::to_string(current_weather.min_temp) + "-" + std::to_string(current_weather.max_temp), rotate);
-        
-        // Rain percentage
-        draw_text_blue(1, 28, std::to_string(current_weather.rain_chance) + "% RAIN", rotate);
-        
-        // Weather icon positioned below text with proper margin
-        ::draw_weather_icon(12, 40, current_weather.icon_code, rotate);
+        // Vertical layout (32x64) - Weekly forecast view
+        for (int i = 0; i < 5 && i < forecast_data.size(); i++) {
+            int y_day = 2 + (i * 12);    // Day name position
+            int y_temp = y_day + 8;      // Temperature position
+            
+            // Draw day name in white using vertical rotation
+            draw_text_white_mode(1, y_day, forecast_data[i].day_name, RotationMode::VERTICAL_CLOCKWISE);
+            
+            // Draw low temperature in blue using vertical rotation
+            draw_text_blue_mode(2, y_temp, std::to_string(forecast_data[i].min_temp), RotationMode::VERTICAL_CLOCKWISE);
+            
+            // Draw high temperature in red using vertical rotation
+            draw_text_red_mode(12, y_temp, std::to_string(forecast_data[i].max_temp), RotationMode::VERTICAL_CLOCKWISE);
+        }
     }
 }
 

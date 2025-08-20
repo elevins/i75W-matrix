@@ -29,16 +29,41 @@ Point rotate_180(int x, int y) {
     return Point(DISPLAY_WIDTH - 1 - x, DISPLAY_HEIGHT - 1 - y);
 }
 
-// Safe pixel drawing with optional 180-degree rotation
+// Function to rotate coordinates for vertical orientation (90° clockwise + upside-down)
+Point rotate_vertical(int x, int y) {
+    // For vertical mode: 32x64 logical becomes 64x32 physical
+    // 90° clockwise: (x,y) -> (y, 31-x) for 32-wide logical screen
+    // Then upside-down: (x,y) -> (63-x, 31-y) for 64x32 physical
+    int rotated_x = y;
+    int rotated_y = 31 - x;  // 31 = DISPLAY_HEIGHT - 1
+    return Point(DISPLAY_WIDTH - 1 - rotated_x, DISPLAY_HEIGHT - 1 - rotated_y);
+}
+
+// Legacy boolean interface for backward compatibility
 void draw_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, bool rotate) {
-    if (x >= 0 && x < DISPLAY_WIDTH && y >= 0 && y < DISPLAY_HEIGHT) {
+    RotationMode mode = rotate ? RotationMode::HORIZONTAL_UPSIDE_DOWN : RotationMode::HORIZONTAL_UPSIDE_DOWN;
+    draw_pixel_mode(x, y, r, g, b, mode);
+}
+
+// New rotation mode interface
+void draw_pixel_mode(int x, int y, uint8_t r, uint8_t g, uint8_t b, RotationMode rotation) {
+    // For vertical mode, check against logical 32x64 bounds
+    int max_x = (rotation == RotationMode::VERTICAL_CLOCKWISE) ? 32 : DISPLAY_WIDTH;
+    int max_y = (rotation == RotationMode::VERTICAL_CLOCKWISE) ? 64 : DISPLAY_HEIGHT;
+    
+    if (x >= 0 && x < max_x && y >= 0 && y < max_y) {
         graphics.set_pen(r, g, b);
-        if (rotate) {
-            Point rotated = rotate_180(x, y);
-            graphics.pixel(rotated);
+        
+        Point final_point;
+        if (rotation == RotationMode::HORIZONTAL_UPSIDE_DOWN) {
+            final_point = rotate_180(x, y);
+        } else if (rotation == RotationMode::VERTICAL_CLOCKWISE) {
+            final_point = rotate_vertical(x, y);
         } else {
-            graphics.pixel(Point(x, y));
+            final_point = Point(x, y); // No rotation
         }
+        
+        graphics.pixel(final_point);
     }
 }
 
