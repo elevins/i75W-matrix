@@ -70,8 +70,8 @@ void WeatherApp::draw_current_weather(bool is_horizontal) {
         draw_text_white(3, 24, "HUMIDITY", rotate);
         draw_text_white(37, 24, std::to_string(current_weather.humidity) + "%", rotate);
         
-        // Weather icon: (40,1) - Python coordinate
-        ::draw_weather_icon(40, 1, current_weather.icon_code, rotate);
+        // Weather icon: (42,1) - 2px up, 2px left from previous position
+        ::draw_weather_icon(42, 1, current_weather.icon_code, rotate);
         
     } else {
         // Vertical layout (32x64) using bitmap text
@@ -86,8 +86,8 @@ void WeatherApp::draw_current_weather(bool is_horizontal) {
         // Rain percentage
         draw_text_blue(1, 28, std::to_string(current_weather.rain_chance) + "% RAIN", rotate);
         
-        // Weather icon positioned below text
-        ::draw_weather_icon(8, 40, current_weather.icon_code, rotate);
+        // Weather icon positioned below text with proper margin
+        ::draw_weather_icon(12, 40, current_weather.icon_code, rotate);
     }
 }
 

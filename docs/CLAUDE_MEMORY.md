@@ -23,7 +23,7 @@ Temperature row: (3,3), (13,3), (23,3)     # min, current, max temps
 Rain row: (3,10), (21,10)                   # "RAIN" label and percentage  
 Sunrise/sunset: (3,17), (21,17)             # "RISE"/"SET" and time
 Humidity: (3,24), (37,24)                   # "HUMIDITY" and percentage
-Weather icon: (40,1)                        # PNG weather icon position
+Weather icon: (42,1)                        # PNG weather icon position (adjusted)
 ```
 These coordinates represent the final visual appearance after rotation.
 

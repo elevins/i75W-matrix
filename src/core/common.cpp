@@ -1,15 +1,24 @@
 #include "common.hpp"
 #include "libraries/bitmap_fonts/font8_data.hpp"
 #include "libraries/bitmap_fonts/font6_data.hpp"
-#include "../assets/weather/weather_01d_png.h"
-#include "../assets/weather/weather_02d_png.h"
-#include "../assets/weather/weather_03d_png.h"
-#include "../assets/weather/weather_04d_png.h"
-#include "../assets/weather/weather_09d_png.h"
-#include "../assets/weather/weather_10d_png.h"
-#include "../assets/weather/weather_11d_png.h"
-#include "../assets/weather/weather_13d_png.h"
-#include "../assets/weather/weather_50d_png.h"
+#include "../assets/weather/weather_01d_png_new.h"
+#include "../assets/weather/weather_01n_png_new.h"
+#include "../assets/weather/weather_02d_png_new.h"
+#include "../assets/weather/weather_02n_png_new.h"
+#include "../assets/weather/weather_03d_png_new.h"
+#include "../assets/weather/weather_03n_png_new.h"
+#include "../assets/weather/weather_04d_png_new.h"
+#include "../assets/weather/weather_04n_png_new.h"
+#include "../assets/weather/weather_09d_png_new.h"
+#include "../assets/weather/weather_09n_png_new.h"
+#include "../assets/weather/weather_10d_png_new.h"
+#include "../assets/weather/weather_10n_png_new.h"
+#include "../assets/weather/weather_11d_png_new.h"
+#include "../assets/weather/weather_11n_png_new.h"
+#include "../assets/weather/weather_13d_png_new.h"
+#include "../assets/weather/weather_13n_png_new.h"
+#include "../assets/weather/weather_50d_png_new.h"
+#include "../assets/weather/weather_50n_png_new.h"
 
 // Display constants
 const int DISPLAY_WIDTH = 64;
@@ -118,110 +127,144 @@ void draw_asset_logo(int x, int y, const std::string& ticker, uint8_t r, uint8_t
     }
 }
 
-// PNG decode callback function for drawing pixels to display
 void PNGDraw(PNGDRAW *pDraw) {
     uint8_t *s = (uint8_t *)pDraw->pPixels;
-    
-    // Get coordinates from user data (passed as x,y offset)
     int *coords = (int *)pDraw->pUser;
     int base_x = coords[0];
     int base_y = coords[1];
     bool rotate = coords[2] != 0;
     
-    // Convert PNG pixels and draw them
     for (int x = 0; x < pDraw->iWidth; x++) {
-        uint8_t r, g, b, a = 255;
+        uint8_t r, g, b;
         
-        if (pDraw->iBpp == 32) { // RGBA
-            r = s[x * 4];
-            g = s[x * 4 + 1]; 
-            b = s[x * 4 + 2];
-            a = s[x * 4 + 3];
-        } else if (pDraw->iBpp == 24) { // RGB
-            r = s[x * 3];
-            g = s[x * 3 + 1];
-            b = s[x * 3 + 2];
-        } else if (pDraw->iBpp == 8) { // Indexed
+        if (pDraw->iBpp == 8) { // 8-bit indexed color
             uint8_t idx = s[x];
             if (pDraw->pPalette && idx < 256) {
                 r = pDraw->pPalette[idx * 3];
                 g = pDraw->pPalette[idx * 3 + 1];
                 b = pDraw->pPalette[idx * 3 + 2];
             } else {
-                r = g = b = idx; // Grayscale fallback
+                continue;
             }
+        } else if (pDraw->iBpp == 24) { // RGB
+            r = s[x * 3];
+            g = s[x * 3 + 1];
+            b = s[x * 3 + 2];
+        } else if (pDraw->iBpp == 32) { // RGBA
+            r = s[x * 4];
+            g = s[x * 4 + 1]; 
+            b = s[x * 4 + 2];
+            uint8_t a = s[x * 4 + 3];
+            if (a < 128) continue;
         } else {
-            continue; // Unsupported format
+            continue;
         }
         
-        // Skip transparent pixels
-        if (a < 128) continue;
+        // Skip black pixels (often transparent in indexed images)
+        if (r == 0 && g == 0 && b == 0) continue;
         
-        // Draw pixel at offset position
         draw_pixel(base_x + x, base_y + pDraw->y, r, g, b, rotate);
     }
 }
 
-// Function to draw weather icon from PNG data
 void draw_weather_icon(int x, int y, const std::string& icon_code, bool rotate) {
     PNG png;
-    int rc;
     
-    // Select appropriate PNG data based on icon code
+    // Select PNG data based on icon code
     const unsigned char *png_data = nullptr;
     unsigned int png_len = 0;
     
-    if (icon_code == "01d" || icon_code == "01n") {
-        png_data = weather_01d_png_data;
-        png_len = weather_01d_png_len;
-    } else if (icon_code == "02d" || icon_code == "02n") {
-        png_data = weather_02d_png_data;
-        png_len = weather_02d_png_len;
-    } else if (icon_code == "03d" || icon_code == "03n") {
-        png_data = weather_03d_png_data;
-        png_len = weather_03d_png_len;
-    } else if (icon_code == "04d" || icon_code == "04n") {
-        png_data = weather_04d_png_data;
-        png_len = weather_04d_png_len;
-    } else if (icon_code == "09d" || icon_code == "09n") {
-        png_data = weather_09d_png_data;
-        png_len = weather_09d_png_len;
-    } else if (icon_code == "10d" || icon_code == "10n") {
-        png_data = weather_10d_png_data;
-        png_len = weather_10d_png_len;
-    } else if (icon_code == "11d" || icon_code == "11n") {
-        png_data = weather_11d_png_data;
-        png_len = weather_11d_png_len;
-    } else if (icon_code == "13d" || icon_code == "13n") {
-        png_data = weather_13d_png_data;
-        png_len = weather_13d_png_len;
-    } else if (icon_code == "50d" || icon_code == "50n") {
-        png_data = weather_50d_png_data;
-        png_len = weather_50d_png_len;
+    if (icon_code == "01d") {
+        png_data = __01d_png;
+        png_len = __01d_png_len;
+    } else if (icon_code == "01n") {
+        png_data = __01n_png;
+        png_len = __01n_png_len;
+    } else if (icon_code == "02d") {
+        png_data = __02d_png;
+        png_len = __02d_png_len;
+    } else if (icon_code == "02n") {
+        png_data = __02n_png;
+        png_len = __02n_png_len;
+    } else if (icon_code == "03d") {
+        png_data = __03d_png;
+        png_len = __03d_png_len;
+    } else if (icon_code == "03n") {
+        png_data = __03n_png;
+        png_len = __03n_png_len;
+    } else if (icon_code == "04d") {
+        png_data = __04d_png;
+        png_len = __04d_png_len;
+    } else if (icon_code == "04n") {
+        png_data = __04n_png;
+        png_len = __04n_png_len;
+    } else if (icon_code == "09d") {
+        png_data = __09d_png;
+        png_len = __09d_png_len;
+    } else if (icon_code == "09n") {
+        png_data = __09n_png;
+        png_len = __09n_png_len;
+    } else if (icon_code == "10d") {
+        png_data = __10d_png;
+        png_len = __10d_png_len;
+    } else if (icon_code == "10n") {
+        png_data = __10n_png;
+        png_len = __10n_png_len;
+    } else if (icon_code == "11d") {
+        png_data = __11d_png;
+        png_len = __11d_png_len;
+    } else if (icon_code == "11n") {
+        png_data = __11n_png;
+        png_len = __11n_png_len;
+    } else if (icon_code == "13d") {
+        png_data = __13d_png;
+        png_len = __13d_png_len;
+    } else if (icon_code == "13n") {
+        png_data = __13n_png;
+        png_len = __13n_png_len;
+    } else if (icon_code == "50d") {
+        png_data = __50d_png;
+        png_len = __50d_png_len;
+    } else if (icon_code == "50n") {
+        png_data = __50n_png;
+        png_len = __50n_png_len;
     }
     
-    if (png_data == nullptr) {
-        // Fallback: draw a simple icon placeholder
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                if ((i + j) % 4 == 0) {
-                    draw_pixel(x + i, y + j, 255, 255, 0, rotate);
-                }
-            }
-        }
-        return;
-    }
-    
-    // Pass coordinates to callback via user data
-    static int coords[3];  // Make static to ensure memory stays valid during decode
+    // Set up coordinates for callback
+    static int coords[3];
     coords[0] = x;
-    coords[1] = y; 
+    coords[1] = y;
     coords[2] = rotate ? 1 : 0;
     
-    // Initialize PNG decoder using openRAM for embedded data
-    rc = png.openRAM((uint8_t *)png_data, png_len, PNGDraw);
-    if (rc == PNG_SUCCESS) {
-        png.decode((void *)coords, 0);
-        png.close();
+    if (png_data != nullptr) {
+        // Try to decode embedded PNG data
+        int rc = png.openRAM((uint8_t *)png_data, png_len, PNGDraw);
+        if (rc == PNG_SUCCESS) {
+            png.decode((void *)coords, 0);
+            png.close();
+            return; // Success, exit early
+        }
+    }
+    
+    // Fallback: draw simple bitmap icon
+    if (icon_code == "01d" || icon_code == "01n") {
+        // Clear sky - sun icon
+        for (int i = 6; i <= 9; i++) {
+            for (int j = 6; j <= 9; j++) {
+                draw_pixel(x + i, y + j, 255, 255, 0, rotate);
+            }
+        }
+        // Sun rays
+        draw_pixel(x + 7, y + 2, 255, 255, 0, rotate);
+        draw_pixel(x + 7, y + 13, 255, 255, 0, rotate);
+        draw_pixel(x + 2, y + 7, 255, 255, 0, rotate);
+        draw_pixel(x + 13, y + 7, 255, 255, 0, rotate);
+    } else {
+        // Default cloud for other weather
+        for (int i = 3; i <= 12; i++) {
+            for (int j = 5; j <= 10; j++) {
+                draw_pixel(x + i, y + j, 150, 150, 150, rotate);
+            }
+        }
     }
 }
