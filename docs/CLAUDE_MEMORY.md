@@ -12,9 +12,19 @@
   - Uses `draw_weather_icon()` function with pixel-by-pixel drawing
   - Supports transparency and rotation
   - Example: `weather_01d_png_data` embedded C array
-- **Built-in bitmap fonts**: Work but positioning issues with rotation
-  - Uses font6 (smallest available)
-  - Current implementation has text positioning problems
+- **Custom bitmap fonts**: ✅ WORKING PERFECTLY
+  - Uses custom tiny_bitmap.h with 5px bitmap font data
+  - Perfect text rendering with `draw_text_white()`, `draw_text_blue()`, `draw_text_red()`
+  - Proper 180° rotation handling built into text renderer
+  - Matches Python PIL reference layout exactly
+- **WiFi + Display Integration**: ✅ WORKING PERFECTLY  
+  - CYW43 WiFi chip successfully integrated with Hub75 display
+  - Uses `pico_cyw43_arch_lwip_poll` architecture
+  - Initialization sequence: CYW43 first, then Hub75, then WiFi connect
+- **GPIO Controls**: ✅ WORKING PERFECTLY
+  - Polling-based control system (no interrupts)
+  - Encoder, button, tilt switch all functional
+  - Avoids GPIO interrupt conflicts with CYW43 WiFi chip
 
 ## Target Layout (Python PIL Reference - Visual Coordinates)
 Based on working Python implementation that produces desired visual layout:
@@ -41,17 +51,31 @@ These coordinates represent the final visual appearance after rotation.
 - **Manual rotation coordinate calculation**: Text positioning broken
   - Overcomplicated coordinate transformations
   - Text appeared off-screen or illegible
+- **GPIO Interrupt-based Controls**: Conflicted with CYW43 WiFi chip
+  - `gpio_set_irq_enabled_with_callback()` caused display to go blank
+  - `gpio_add_raw_irq_handler()` also conflicted with CYW43's interrupt handling
+  - CYW43 uses GPIO 24 (HOST_WAKE) with exclusive interrupt priority
 
-## Current Status
+## Current Status - ALL SYSTEMS WORKING ✅
 - PNG weather icons: ✅ Working perfectly
-- Text rendering: ❌ Needs custom bitmap font solution
-- Layout: ✅ Have proven Python reference implementation
+- Text rendering: ✅ Custom bitmap font system working perfectly
+- Layout: ✅ Matches Python reference implementation exactly
+- WiFi integration: ✅ CYW43 + Hub75 working together
+- GPIO controls: ✅ Polling-based encoder, button, tilt switch
+- Complete weather display: ✅ Full horizontal/vertical orientations
 
-## Next Steps - Bitmap Font Implementation
-1. Use PIL to convert tiny.otf at 5px to bitmap character arrays
-2. Implement custom text renderer using pixel-by-pixel approach (like PNG icons)
-3. Use Python layout coordinates as visual targets
-4. Handle rotation internally in text renderer
+## Critical Technical Solutions
+1. **WiFi + Display Integration**:
+   - Initialize CYW43 first: `cyw43_arch_init()` + `cyw43_arch_enable_sta_mode()`
+   - Then initialize Hub75: `hub75.start(dma_complete)`
+   - Finally connect WiFi: `cyw43_arch_wifi_connect_timeout_ms()`
+   - CMakeLists.txt must link `pico_cyw43_arch_lwip_poll` (not `pico_wireless`)
+
+2. **GPIO Controls Without Interrupts**:
+   - Use polling in main loop: `poll_controls()` every 10ms
+   - Proper debouncing for each control type
+   - Quadrature decoding for rotary encoder
+   - GPIO pins: Encoder A=19, B=21, Button=20, Tilt=26
 
 ## Development Notes
 - Font size: 5px works perfectly in Python PIL version

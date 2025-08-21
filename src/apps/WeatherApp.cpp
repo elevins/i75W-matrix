@@ -41,15 +41,6 @@ void WeatherApp::load_weather_icons() {
 }
 
 void WeatherApp::draw(bool is_horizontal) {
-    
-    if (sub_state == 0) {
-        draw_current_weather(is_horizontal);
-    } else {
-        draw_forecast(is_horizontal);
-    }
-}
-
-void WeatherApp::draw_current_weather(bool is_horizontal) {
     bool rotate = true; // Always rotate 180° for proper orientation
     
     if (is_horizontal) {
@@ -94,32 +85,6 @@ void WeatherApp::draw_current_weather(bool is_horizontal) {
     }
 }
 
-void WeatherApp::draw_forecast(bool is_horizontal) {
-    bool rotate = true;
-    
-    if (is_horizontal) {
-        draw_string(2, 2, "FORECAST", 255, 255, 0, rotate);
-        
-        for (int i = 0; i < 3 && i < forecast_data.size(); i++) {
-            const WeatherData& forecast = forecast_data[i];
-            int y_pos = 10 + i * 7;
-            
-            draw_string(2, y_pos, std::to_string(forecast.min_temp) + "-" + std::to_string(forecast.max_temp), 255, 255, 255, rotate);
-            draw_string(25, y_pos, std::to_string(forecast.rain_chance) + "%", 100, 150, 255, rotate);
-        }
-    } else {
-        draw_string(2, 1, "FORECAST", 255, 255, 0, rotate);
-        
-        for (int i = 0; i < 3 && i < forecast_data.size(); i++) {
-            const WeatherData& forecast = forecast_data[i];
-            int y_pos = 8 + i * 8;
-            
-            draw_string(2, y_pos, "DAY" + std::to_string(i+1), 200, 200, 200, rotate);
-            draw_string(2, y_pos + 3, std::to_string(forecast.max_temp) + "F", 255, 255, 255, rotate);
-            draw_string(25, y_pos + 3, std::to_string(forecast.rain_chance) + "%", 100, 150, 255, rotate);
-        }
-    }
-}
 
 void WeatherApp::handle_button_press(bool is_horizontal) {
     // Toggle between current weather and forecast

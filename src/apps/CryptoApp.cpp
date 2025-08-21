@@ -1,4 +1,5 @@
 #include "CryptoApp.hpp"
+#include "../utils/text_renderer.h"
 
 CryptoApp::CryptoApp() {
     initialize_crypto_data();
@@ -6,10 +7,11 @@ CryptoApp::CryptoApp() {
 
 void CryptoApp::initialize_crypto_data() {
     crypto_assets = {
-        {"BTC", "Bitcoin", "45.2K", 5.7f},
-        {"ETH", "Ethereum", "3.2K", -2.1f},
-        {"ADA", "Cardano", "0.45", 12.3f},
-        {"SOL", "Solana", "105", -4.8f}
+        {"BTC", "Bitcoin", "98.5K", 3.2f},
+        {"ETH", "Ethereum", "3.4K", -1.8f},
+        {"XNO", "Nano", "1.25", 8.7f},
+        {"DOGE", "Dogecoin", "0.38", -2.4f},
+        {"XMR", "Monero", "185", 1.9f}
     };
 }
 
@@ -28,48 +30,78 @@ void CryptoApp::draw(bool is_horizontal) {
 void CryptoApp::draw_single_asset(bool is_horizontal, const AssetData& asset) {
     bool rotate = true; // Always rotate 180° for proper orientation
     
-    // Large asset logo (left side)
-    draw_asset_logo(2, 8, asset.ticker, 255, 165, 0, rotate);
+    // Top half: Asset symbol and price
+    draw_string(3, 3, asset.ticker, 255, 165, 0, rotate);           // Asset symbol (orange for crypto)
+    draw_string(25, 3, "$" + asset.price, 255, 255, 0, rotate);     // Price (yellow)
     
-    // Asset name and ticker (top right)
-    draw_string(12, 2, asset.name, 255, 255, 0, rotate);
-    draw_string(12, 10, asset.ticker, 200, 200, 200, rotate);
-    
-    // Current price (large, middle right)
-    draw_string(12, 18, "$" + asset.price, 255, 255, 255, rotate);
-    
-    // 24h change with color coding (bottom right)
-    uint8_t change_r = asset.change_24h >= 0 ? 0 : 255;
-    uint8_t change_g = asset.change_24h >= 0 ? 255 : 0;
-    uint8_t change_b = 0;
-    
-    std::string change_str = (asset.change_24h >= 0 ? "+" : "") + std::to_string(asset.change_24h).substr(0, 4) + "%";
-    draw_string(12, 26, change_str, change_r, change_g, change_b, rotate);
+    // Bottom half: Simple 24h change graph visualization
+    draw_graph_24h_change(asset.change_24h, rotate);
 }
 
 void CryptoApp::draw_asset_list(bool is_horizontal) {
-    bool rotate = true;
-    
-    draw_string(2, 1, "CRYPTO", 255, 255, 0, rotate);
-    
-    for (int i = 0; i < 4 && i < crypto_assets.size(); i++) {
+    // Vertical layout (32x64) - Crypto list view matching WeatherApp pattern
+    for (int i = 0; i < 5 && i < crypto_assets.size(); i++) {
         const AssetData& asset = crypto_assets[i];
-        int y_pos = 8 + i * 6;
+        int y_symbol = 2 + (i * 12);    // Symbol position
+        int y_price = y_symbol + 6;     // Price position (reduced gap)
         
-        // Small logo + ticker
-        draw_string(2, y_pos, asset.ticker, 255, 165, 0, rotate);
+        // Draw crypto symbol in white using vertical rotation
+        draw_text_white_mode(2, y_symbol, asset.ticker, RotationMode::VERTICAL_CLOCKWISE);
         
-        // Price
-        draw_string(20, y_pos, "$" + asset.price, 255, 255, 255, rotate);
+        // Draw current price in white using vertical rotation
+        draw_text_white_mode(13, y_price, "$" + asset.price, RotationMode::VERTICAL_CLOCKWISE);
         
-        // 24h change with color
-        uint8_t change_r = asset.change_24h >= 0 ? 0 : 255;
-        uint8_t change_g = asset.change_24h >= 0 ? 255 : 0;
-        uint8_t change_b = 0;
-        
+        // Draw 24h change with color coding using vertical rotation
         std::string change_str = (asset.change_24h >= 0 ? "+" : "") + std::to_string(asset.change_24h).substr(0, 4) + "%";
-        draw_string(40, y_pos, change_str, change_r, change_g, change_b, rotate);
+        if (asset.change_24h >= 0) {
+            draw_text_red_mode(23, y_price, change_str, RotationMode::VERTICAL_CLOCKWISE);  // Green for positive
+        } else {
+            draw_text_blue_mode(23, y_price, change_str, RotationMode::VERTICAL_CLOCKWISE); // Red for negative  
+        }
     }
+}
+
+void CryptoApp::draw_graph_24h_change(float change_percent, bool rotate) {
+    // Simple bar graph in bottom half (y 16-30)
+    int graph_center_y = 23;  // Middle of bottom half
+    int graph_start_x = 5;
+    int graph_width = 54;     // Most of the width
+    
+    // Normalize change to graph height (max ±8 pixels from center)
+    int max_change = 10;  // Assume max ±10% change for scaling
+    int bar_height = (int)((change_percent / max_change) * 8);
+    bar_height = std::max(-8, std::min(8, bar_height)); // Clamp to ±8 pixels
+    
+    // Choose color based on positive/negative
+    uint8_t bar_r = change_percent >= 0 ? 0 : 255;
+    uint8_t bar_g = change_percent >= 0 ? 255 : 0;
+    uint8_t bar_b = 0;
+    
+    // Draw horizontal baseline
+    for (int x = graph_start_x; x < graph_start_x + graph_width; x++) {
+        draw_pixel(x, graph_center_y, 100, 100, 100, rotate);
+    }
+    
+    // Draw the change bar
+    if (bar_height > 0) {
+        // Positive change - bar goes up
+        for (int y = graph_center_y - bar_height; y <= graph_center_y; y++) {
+            for (int x = graph_start_x + 10; x < graph_start_x + graph_width - 10; x++) {
+                draw_pixel(x, y, bar_r, bar_g, bar_b, rotate);
+            }
+        }
+    } else if (bar_height < 0) {
+        // Negative change - bar goes down
+        for (int y = graph_center_y; y <= graph_center_y - bar_height; y++) {
+            for (int x = graph_start_x + 10; x < graph_start_x + graph_width - 10; x++) {
+                draw_pixel(x, y, bar_r, bar_g, bar_b, rotate);
+            }
+        }
+    }
+    
+    // Draw change percentage text
+    std::string change_str = (change_percent >= 0 ? "+" : "") + std::to_string(change_percent).substr(0, 4) + "%";
+    draw_string(25, 10, change_str, bar_r, bar_g, bar_b, rotate);
 }
 
 void CryptoApp::handle_button_press(bool is_horizontal) {

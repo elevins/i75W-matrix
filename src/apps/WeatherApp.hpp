@@ -17,8 +17,6 @@ private:
     std::vector<WeatherData> forecast_data;
     std::map<std::string, uint8_t*> weather_icons;
     
-    void draw_current_weather(bool is_horizontal);
-    void draw_forecast(bool is_horizontal);
     void load_weather_icons();
     void initialize_mock_data();
 };

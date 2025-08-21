@@ -19,6 +19,10 @@ extern PicoGraphics_PenRGB888 graphics;
 extern Hub75 hub75;
 extern PicoVector picovector;
 
+// Forward declaration
+class NetworkManager;
+extern NetworkManager* global_network_manager;
+
 // Application types
 enum AppType {
     APP_WEATHER,
@@ -71,6 +75,9 @@ void draw_string(int x, int y, const std::string& text, uint8_t r, uint8_t g, ui
 void draw_asset_logo(int x, int y, const std::string& ticker, uint8_t r, uint8_t g, uint8_t b, bool rotate = true);
 void draw_weather_icon(int x, int y, const std::string& icon_code, bool rotate = true);
 void set_custom_font_status(bool loaded);
+
+// WiFi status indicator
+void draw_wifi_status(int x, int y, bool rotate = true);
 
 // Point helpers for rotation
 Point rotate_180(int x, int y);

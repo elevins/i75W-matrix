@@ -16,4 +16,5 @@ private:
     void draw_single_asset(bool is_horizontal, const AssetData& asset);
     void draw_asset_list(bool is_horizontal);
     void initialize_crypto_data();
+    void draw_graph_24h_change(float change_percent, bool rotate);
 };

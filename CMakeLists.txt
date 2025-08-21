@@ -49,6 +49,7 @@ target_link_libraries(${NAME}
     pico_vector
     pngdec
     hardware_pwm
+    pico_cyw43_arch_lwip_poll
 )
 
 # create map/bin/hex file etc.
