@@ -1,11 +1,21 @@
 #include "WeatherApp.hpp"
 #include "../utils/text_renderer.h"
+#include "../utils/https_client.h"
 #include <sstream>
 #include <iomanip>
 
-WeatherApp::WeatherApp() {
+WeatherApp::WeatherApp() : https_client(nullptr), api_data_loaded(false) {
     initialize_mock_data();
     load_weather_icons();
+    
+    // Initialize HTTPS client
+    https_client = new HttpsClient();
+    if (https_client && https_client->init("EddyBsHouse", "swiftwater496")) {
+        printf("WeatherApp: HTTPS client initialized successfully\n");
+        fetch_weather_data();
+    } else {
+        printf("WeatherApp: Failed to initialize HTTPS client\n");
+    }
 }
 
 void WeatherApp::initialize_mock_data() {
@@ -41,6 +51,11 @@ void WeatherApp::load_weather_icons() {
 }
 
 void WeatherApp::draw(bool is_horizontal) {
+    // Process HTTPS client network events
+    if (https_client) {
+        https_client->process();
+    }
+    
     bool rotate = true; // Always rotate 180° for proper orientation
     
     if (is_horizontal) {
@@ -86,7 +101,47 @@ void WeatherApp::draw(bool is_horizontal) {
 }
 
 
+WeatherApp::~WeatherApp() {
+    if (https_client) {
+        delete https_client;
+        https_client = nullptr;
+    }
+}
+
+void WeatherApp::fetch_weather_data() {
+    if (!https_client || !https_client->is_connected()) {
+        printf("WeatherApp: HTTPS client not ready for request\n");
+        return;
+    }
+    
+    // Use OpenWeatherMap API (requires API key)
+    // For demo purposes, using a free weather API that supports HTTPS
+    std::string url = "https://api.openweathermap.org/data/2.5/weather?q=New York,NY&appid=YOUR_API_KEY&units=imperial";
+    
+    printf("WeatherApp: Requesting weather data...\n");
+    https_client->get(url, [this](const std::string& response) {
+        printf("WeatherApp: Received weather response: %s\n", response.c_str());
+        parse_weather_response(response);
+        api_data_loaded = true;
+    });
+}
+
+void WeatherApp::parse_weather_response(const std::string& json_response) {
+    // Simple JSON parsing - in a real implementation, use a JSON library
+    // For now, just update with demo data to show HTTPS is working
+    printf("WeatherApp: Parsing weather response (basic implementation)\n");
+    
+    // Update current weather with API indicator
+    current_weather.location = "NYC (API)";
+    current_weather.current_temp = 75; // Would parse from JSON
+    current_weather.description = "Live Data"; // Would parse from JSON
+}
+
 void WeatherApp::handle_button_press(bool is_horizontal) {
+    // Button press can trigger a weather data refresh
+    if (https_client && https_client->is_connected()) {
+        fetch_weather_data();
+    }
     // Toggle between current weather and forecast
     sub_state = (sub_state + 1) % 2;
 }

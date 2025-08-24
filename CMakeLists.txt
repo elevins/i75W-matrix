@@ -25,10 +25,16 @@ add_executable(${NAME}
     src/apps/StockApp.cpp
     src/apps/CryptoApp.cpp
     src/utils/text_renderer.cpp
+    src/utils/https_client.cpp
 )
 
 # Add lwIP config directory
 target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Add compiler definitions for mbedTLS compatibility
+target_compile_definitions(${NAME} PRIVATE
+    MBEDTLS_CONFIG_FILE="mbedtls_config.h"
+)
 
 # Include required libraries
 # This assumes `pimoroni-pico` is stored alongside your project
@@ -50,6 +56,8 @@ target_link_libraries(${NAME}
     pngdec
     hardware_pwm
     pico_cyw43_arch_lwip_poll
+    pico_lwip_mbedtls
+    pico_mbedtls
 )
 
 # create map/bin/hex file etc.

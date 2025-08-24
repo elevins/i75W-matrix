@@ -68,6 +68,15 @@
 #define LWIP_IGMP                   1
 #define LWIP_NETBUF_RECVINFO        0
 
+// TLS/HTTPS Support
+#define LWIP_ALTCP                  1
+#define LWIP_ALTCP_TLS              1
+#define LWIP_ALTCP_TLS_MBEDTLS      1
+
+// Disable session caching to avoid compatibility issues
+#define ALTCP_MBEDTLS_USE_SESSION_CACHE 0
+#define ALTCP_MBEDTLS_USE_SESSION_TICKETS 0
+
 #ifndef NDEBUG
 #define LWIP_DEBUG                  1
 #define LWIP_STATS                  1
