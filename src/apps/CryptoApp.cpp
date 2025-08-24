@@ -31,8 +31,8 @@ void CryptoApp::draw_single_asset(bool is_horizontal, const AssetData& asset) {
     bool rotate = true; // Always rotate 180° for proper orientation
     
     // Top half: Asset symbol and price
-    draw_string(3, 3, asset.ticker, 255, 165, 0, rotate);           // Asset symbol (orange for crypto)
-    draw_string(25, 3, "$" + asset.price, 255, 255, 0, rotate);     // Price (yellow)
+    drawText(3, 3, asset.ticker, 255, 165, 0);           // Asset symbol (orange for crypto)
+    drawText(25, 3, "$" + asset.price, COLOR_YELLOW);     // Price (yellow)
     
     // Bottom half: Simple 24h change graph visualization
     draw_graph_24h_change(asset.change_24h, rotate);
@@ -46,17 +46,17 @@ void CryptoApp::draw_asset_list(bool is_horizontal) {
         int y_price = y_symbol + 6;     // Price position (reduced gap)
         
         // Draw crypto symbol in white using vertical rotation
-        draw_text_white_mode(2, y_symbol, asset.ticker, RotationMode::VERTICAL_CLOCKWISE);
+        drawText(2, y_symbol, asset.ticker, COLOR_WHITE, RotationMode::VERTICAL_CLOCKWISE);
         
         // Draw current price in white using vertical rotation
-        draw_text_white_mode(13, y_price, "$" + asset.price, RotationMode::VERTICAL_CLOCKWISE);
+        drawText(13, y_price, "$" + asset.price, COLOR_WHITE, RotationMode::VERTICAL_CLOCKWISE);
         
         // Draw 24h change with color coding using vertical rotation
         std::string change_str = (asset.change_24h >= 0 ? "+" : "") + std::to_string(asset.change_24h).substr(0, 4) + "%";
         if (asset.change_24h >= 0) {
-            draw_text_red_mode(23, y_price, change_str, RotationMode::VERTICAL_CLOCKWISE);  // Green for positive
+            drawText(23, y_symbol, change_str, COLOR_RED, RotationMode::VERTICAL_CLOCKWISE);  // Red for positive
         } else {
-            draw_text_blue_mode(23, y_price, change_str, RotationMode::VERTICAL_CLOCKWISE); // Red for negative  
+            drawText(23, y_symbol, change_str, COLOR_BLUE, RotationMode::VERTICAL_CLOCKWISE); // Blue for negative  
         }
     }
 }
@@ -101,7 +101,7 @@ void CryptoApp::draw_graph_24h_change(float change_percent, bool rotate) {
     
     // Draw change percentage text
     std::string change_str = (change_percent >= 0 ? "+" : "") + std::to_string(change_percent).substr(0, 4) + "%";
-    draw_string(25, 10, change_str, bar_r, bar_g, bar_b, rotate);
+    drawText(25, 10, change_str, bar_r, bar_g, bar_b);
 }
 
 void CryptoApp::handle_button_press(bool is_horizontal) {

@@ -1,6 +1,4 @@
 #include "common.hpp"
-#include "libraries/bitmap_fonts/font8_data.hpp"
-#include "libraries/bitmap_fonts/font6_data.hpp"
 #include "../utils/network_manager.h"
 #include "../assets/weather/weather_01d_png_new.h"
 #include "../assets/weather/weather_01n_png_new.h"
@@ -74,38 +72,9 @@ void draw_pixel_mode(int x, int y, uint8_t r, uint8_t g, uint8_t b, RotationMode
 // Global flag to track font loading status
 static bool font_loaded_successfully = false;
 
-// Text drawing using built-in Pimoroni bitmap fonts
-void draw_string(int x, int y, const std::string& text, uint8_t r, uint8_t g, uint8_t b, bool rotate) {
-    // Green pixel = using working bitmap fonts
-    graphics.set_pen(0, 255, 0);
-    graphics.pixel(Point(0, 31));
-    
-    // Set text color
-    graphics.set_pen(r, g, b);
-    
-    // Use font6 - smallest available font for compact display
-    graphics.set_font(&font6);
-    
-    // Use built-in bitmap text - simple and reliable
-    if (rotate) {
-        // For 180-degree rotation, calculate rotated coordinates
-        Point rotated = rotate_180(x, y);
-        graphics.text(text, rotated, -1);
-    } else {
-        graphics.text(text, Point(x, y), -1);
-    }
-}
-
 // Function to set custom font status
 void set_custom_font_status(bool loaded) {
     font_loaded_successfully = loaded;
-}
-
-// Legacy function for backward compatibility - now just calls draw_string
-void draw_char(int x, int y, char c, uint8_t r, uint8_t g, uint8_t b, bool rotate) {
-    std::string single_char;
-    single_char += c;
-    draw_string(x, y, single_char, r, g, b, rotate);
 }
 
 // Draw simple asset logos (8x8 pixel icons)
@@ -152,7 +121,15 @@ void draw_asset_logo(int x, int y, const std::string& ticker, uint8_t r, uint8_t
         }
     } else {
         // Default: Draw ticker as text
-        draw_string(x, y, ticker.substr(0, 3), r, g, b, rotate);
+        // Default: Draw ticker text - need to include text_renderer.h for drawText
+        // For now, just draw a simple generic box since this is rarely used
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                if (row == 0 || row == 7 || col == 0 || col == 7) {
+                    draw_pixel(x + col, y + row, r, g, b, rotate);
+                }
+            }
+        }
     }
 }
 

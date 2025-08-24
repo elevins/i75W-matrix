@@ -8,6 +8,7 @@
 #include "../apps/CryptoApp.hpp"
 #include "../utils/text_renderer.h"
 
+
 // GPIO pin definitions
 #define ENCODER_A_PIN 19
 #define ENCODER_B_PIN 21
@@ -97,8 +98,6 @@ void __isr dma_complete() {
 int main() {
     stdio_init_all();
     
-    printf("\n=== I75 WEATHER DISPLAY WITH WIFI ===\n");
-    
     // Initialize CYW43 first (EXACT working sequence)
     printf("Initializing WiFi (CYW43)...\n");
     if (cyw43_arch_init()) {
@@ -115,7 +114,7 @@ int main() {
     // Show connecting screen using proper font and rotation (EXACT working code)
     graphics.set_pen(0, 0, 0);
     graphics.clear();
-    draw_text_white(3, 10, "Connecting WiFi...", true);
+    drawText(3, 10, "Connecting WiFi...", COLOR_WHITE);
     hub75.update(&graphics);
     
     // Connect to WiFi (EXACT working sequence)
@@ -142,8 +141,8 @@ int main() {
         // Show WiFi success briefly using proper font and rotation (EXACT working code)
         graphics.set_pen(0, 0, 0);
         graphics.clear();
-        draw_text_white(3, 8, "WiFi Connected!", true);
-        draw_text_white(3, 18, "Starting app...", true);
+        drawText(3, 8, "WiFi Connected!", COLOR_WHITE);
+        drawText(3, 18, "Starting app...", COLOR_WHITE);
         hub75.update(&graphics);
         sleep_ms(2000);
         printf("WiFi success screen shown\n");
@@ -152,7 +151,9 @@ int main() {
         printf("WiFi connection failed with code %d\n", result);
         wifi_connected = false;
     }
-    
+
+
+
     // Initialize GPIO for controls after WiFi is connected (polling, no interrupts)
     printf("Initializing controls (polling mode)...\n");
     gpio_init(ENCODER_A_PIN);
@@ -176,7 +177,7 @@ int main() {
     last_encoder_b = gpio_get(ENCODER_B_PIN);
     last_button_state = gpio_get(ENCODER_SW_PIN);
     
-    printf("Starting main app loop...\n");
+    
     
     // Main loop with controls
     while (true) {

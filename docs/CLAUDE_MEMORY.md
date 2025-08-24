@@ -12,10 +12,12 @@
   - Uses `draw_weather_icon()` function with pixel-by-pixel drawing
   - Supports transparency and rotation
   - Example: `weather_01d_png_data` embedded C array
-- **Custom bitmap fonts**: ✅ WORKING PERFECTLY
+- **Unified Text Rendering**: ✅ WORKING PERFECTLY
+  - **REFACTORED 2024**: Single `drawText()` function replaces 16+ legacy functions
   - Uses custom tiny_bitmap.h with 5px bitmap font data
-  - Perfect text rendering with `draw_text_white()`, `draw_text_blue()`, `draw_text_red()`
-  - Proper 180° rotation handling built into text renderer
+  - Perfect text rendering with `drawText(x, y, text, r, g, b, rotation)`
+  - Color constants: `COLOR_WHITE`, `COLOR_BLUE`, `COLOR_RED`, `COLOR_YELLOW`
+  - Proper rotation handling with `RotationMode` enum
   - Matches Python PIL reference layout exactly
 - **WiFi + Display Integration**: ✅ WORKING PERFECTLY  
   - CYW43 WiFi chip successfully integrated with Hub75 display
@@ -58,11 +60,33 @@ These coordinates represent the final visual appearance after rotation.
 
 ## Current Status - ALL SYSTEMS WORKING ✅
 - PNG weather icons: ✅ Working perfectly
-- Text rendering: ✅ Custom bitmap font system working perfectly
+- **Text rendering: ✅ UNIFIED & REFACTORED** - Single `drawText()` API 
 - Layout: ✅ Matches Python reference implementation exactly
 - WiFi integration: ✅ CYW43 + Hub75 working together
 - GPIO controls: ✅ Polling-based encoder, button, tilt switch
 - Complete weather display: ✅ Full horizontal/vertical orientations
+
+## Recent Refactoring History
+
+### 2024-12-XX: Text Drawing System Refactoring
+**Problem**: 16+ scattered text drawing functions created code duplication and maintenance issues:
+- `draw_text_bitmap()`, `draw_char_bitmap()`, `draw_text_bitmap_mode()`, `draw_char_bitmap_mode()`
+- `draw_text_white()`, `draw_text_blue()`, `draw_text_red()`, `draw_text_yellow()`
+- `draw_text_white_mode()`, `draw_text_blue_mode()`, `draw_text_red_mode()`, `draw_text_yellow_mode()`
+- Legacy `draw_string()`, `draw_char()` functions
+
+**Solution**: Unified into single clean API:
+```cpp
+void drawText(int x, int y, const std::string& text, uint8_t r, uint8_t g, uint8_t b, 
+              RotationMode rotation = RotationMode::HORIZONTAL_UPSIDE_DOWN);
+```
+
+**Benefits**:
+- Single function replaces 16+ legacy functions
+- Color constants: `COLOR_WHITE`, `COLOR_BLUE`, `COLOR_RED`, `COLOR_YELLOW`
+- Cleaner usage: `drawText(3, 10, "RAIN", COLOR_WHITE);`
+- All apps updated, legacy code removed, builds successfully
+- Codebase now human legible
 
 ## Critical Technical Solutions
 1. **WiFi + Display Integration**:

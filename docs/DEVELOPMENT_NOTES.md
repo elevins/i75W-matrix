@@ -57,8 +57,18 @@ Hub75 LED matrix driver
 4. **Custom bitmap fonts most viable path**
 5. **Python reference provides exact layout target**
 
-## Next Phase Strategy
-- Use successful PNG approach as template
-- Generate bitmap font data with PIL
-- Implement custom text renderer
-- Match Python layout coordinates exactly
+## Recent Completed Work
+
+### Text Drawing System Refactoring (2024)
+✅ **COMPLETED**: Successfully unified scattered text drawing functions
+- **Before**: 16+ functions (`draw_text_bitmap`, `draw_text_white`, `draw_text_*_mode`, etc.)
+- **After**: Single `drawText(x, y, text, r, g, b, rotation)` function
+- **Result**: Clean, maintainable codebase with color constants (`COLOR_WHITE`, etc.)
+- All apps updated, legacy code removed, builds successfully
+
+## Historical Phase Strategy (COMPLETED)
+- ✅ Use successful PNG approach as template
+- ✅ Generate bitmap font data with PIL  
+- ✅ Implement custom text renderer
+- ✅ Match Python layout coordinates exactly
+- ✅ Refactor into unified API

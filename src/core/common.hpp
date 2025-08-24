@@ -70,8 +70,6 @@ enum class RotationMode {
 // Drawing functions
 void draw_pixel(int x, int y, uint8_t r, uint8_t g, uint8_t b, bool rotate = true);  // Legacy boolean interface
 void draw_pixel_mode(int x, int y, uint8_t r, uint8_t g, uint8_t b, RotationMode rotation = RotationMode::HORIZONTAL_UPSIDE_DOWN);  // New mode interface
-void draw_char(int x, int y, char c, uint8_t r, uint8_t g, uint8_t b, bool rotate = true);
-void draw_string(int x, int y, const std::string& text, uint8_t r, uint8_t g, uint8_t b, bool rotate = true);
 void draw_asset_logo(int x, int y, const std::string& ticker, uint8_t r, uint8_t g, uint8_t b, bool rotate = true);
 void draw_weather_icon(int x, int y, const std::string& icon_code, bool rotate = true);
 void set_custom_font_status(bool loaded);

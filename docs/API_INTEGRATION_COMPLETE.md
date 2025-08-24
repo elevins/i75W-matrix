@@ -25,7 +25,7 @@ Update WiFi credentials in `src/core/main.cpp`:
 ```
 
 ## 📊 **API Details** 
-- **Endpoint**: `http://api.open-meteo.com/v1/forecast`
+- **Endpoint**: `https://api.open-meteo.com/v1/forecast`
 - **NYC Coordinates**: `latitude=40.7128&longitude=-74.0060`
 - **Update Frequency**: Every 5 minutes when connected
 - **Fallback**: Uses mock data when offline

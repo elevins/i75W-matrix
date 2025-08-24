@@ -109,4 +109,14 @@
 #define DNS_DEBUG                   LWIP_DBG_OFF
 #define IP6_DEBUG                   LWIP_DBG_OFF
 
+// Enable ALTCP for TLS support
+#define LWIP_ALTCP                  1
+#define LWIP_ALTCP_TLS              1
+
+// TLS-specific memory configuration  
+#define MEMP_NUM_ALTCP_PCB          4
+
+// TLS debug (can be enabled for troubleshooting)
+#define ALTCP_TLS_DEBUG             LWIP_DBG_OFF
+
 #endif /* __LWIPOPTS_H__ */

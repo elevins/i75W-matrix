@@ -2,16 +2,18 @@
 #include "lwip/pbuf.h"
 #include "lwip/tcp.h"
 #include "lwip/dns.h"
+#include "lwip/altcp.h"
+#include "lwip/altcp_tls.h"
 #include <cstring>
 #include <iostream>
 
-HttpClient::HttpClient() : wifi_connected(false), tcp_pcb(nullptr) {
+HttpClient::HttpClient() : wifi_connected(false), altcp_pcb(nullptr) {
 }
 
 HttpClient::~HttpClient() {
-    if (tcp_pcb) {
-        tcp_close(tcp_pcb);
-        tcp_pcb = nullptr;
+    if (altcp_pcb) {
+        altcp_close(altcp_pcb);
+        altcp_pcb = nullptr;
     }
 }
 
@@ -43,14 +45,18 @@ void HttpClient::process() {
     cyw43_arch_poll();
 }
 
-void HttpClient::parse_url(const std::string& url, std::string& host, std::string& path) {
+void HttpClient::parse_url(const std::string& url, std::string& host, std::string& path, bool& is_https) {
     // Simple URL parsing - assumes http:// or https://
     size_t protocol_end = url.find("://");
     if (protocol_end == std::string::npos) {
         host = "";
         path = "";
+        is_https = false;
         return;
     }
+    
+    std::string protocol = url.substr(0, protocol_end);
+    is_https = (protocol == "https");
     
     size_t host_start = protocol_end + 3;
     size_t path_start = url.find('/', host_start);
@@ -68,9 +74,10 @@ struct http_request_data {
     HttpClient* client;
     std::string host;
     std::string path;
+    bool is_https;
 };
 
-err_t HttpClient::tcp_connected_callback(void* arg, struct tcp_pcb* pcb, err_t err) {
+err_t HttpClient::altcp_connected_callback(void* arg, struct altcp_pcb* pcb, err_t err) {
     http_request_data* req_data = (http_request_data*)arg;
     
     if (err != ERR_OK) {
@@ -87,30 +94,30 @@ err_t HttpClient::tcp_connected_callback(void* arg, struct tcp_pcb* pcb, err_t e
     request += "\r\n";
     
     // Send HTTP request
-    err_t write_err = tcp_write(pcb, request.c_str(), request.length(), TCP_WRITE_FLAG_COPY);
+    err_t write_err = altcp_write(pcb, request.c_str(), request.length(), TCP_WRITE_FLAG_COPY);
     if (write_err != ERR_OK) {
-        printf("TCP write failed: %d\n", write_err);
+        printf("ALTCP write failed: %d\n", write_err);
         delete req_data;
         return write_err;
     }
     
-    tcp_output(pcb);
+    altcp_output(pcb);
     
     // Set up receive callback
-    tcp_recv(pcb, tcp_recv_callback);
-    tcp_arg(pcb, req_data->client);
+    altcp_recv(pcb, altcp_recv_callback);
+    altcp_arg(pcb, req_data->client);
     
     delete req_data;
     return ERR_OK;
 }
 
-err_t HttpClient::tcp_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf* p, err_t err) {
+err_t HttpClient::altcp_recv_callback(void* arg, struct altcp_pcb* pcb, struct pbuf* p, err_t err) {
     HttpClient* client = (HttpClient*)arg;
     
     if (p == nullptr) {
         // Connection closed
-        tcp_close(pcb);
-        client->tcp_pcb = nullptr;
+        altcp_close(pcb);
+        client->altcp_pcb = nullptr;
         
         // Process response - skip HTTP headers
         std::string& response = client->response_buffer;
@@ -130,7 +137,7 @@ err_t HttpClient::tcp_recv_callback(void* arg, struct tcp_pcb* pcb, struct pbuf*
     char* data = (char*)p->payload;
     client->response_buffer.append(data, p->len);
     
-    tcp_recved(pcb, p->len);
+    altcp_recved(pcb, p->len);
     pbuf_free(p);
     
     return ERR_OK;
@@ -145,22 +152,42 @@ void HttpClient::dns_callback(const char* name, const ip_addr_t* ipaddr, void* a
         return;
     }
     
-    // Create TCP connection
-    struct tcp_pcb* pcb = tcp_new();
+    // Create ALTCP connection (supports both TCP and TLS)
+    struct altcp_pcb* pcb;
+    if (req_data->is_https) {
+        // Create TLS configuration for HTTPS
+        struct altcp_tls_config* tls_config = altcp_tls_create_config_client(NULL, 0);
+        if (tls_config == nullptr) {
+            printf("Failed to create TLS config\n");
+            delete req_data;
+            return;
+        }
+        pcb = altcp_tls_new(tls_config, IPADDR_TYPE_ANY);
+        if (pcb != nullptr) {
+            // Set hostname for certificate validation
+            mbedtls_ssl_set_hostname(altcp_tls_context(pcb), req_data->host.c_str());
+        }
+    } else {
+        // Create regular TCP connection
+        pcb = altcp_tcp_new_ip_type(IPADDR_TYPE_ANY);
+    }
+    
     if (pcb == nullptr) {
-        printf("Failed to create TCP PCB\n");
+        printf("Failed to create ALTCP PCB\n");
         delete req_data;
         return;
     }
     
-    req_data->client->tcp_pcb = pcb;
-    tcp_arg(pcb, req_data);
+    req_data->client->altcp_pcb = pcb;
+    altcp_arg(pcb, req_data);
     
-    err_t err = tcp_connect(pcb, ipaddr, 80, tcp_connected_callback);
+    // Connect to appropriate port (80 for HTTP, 443 for HTTPS)
+    u16_t port = req_data->is_https ? 443 : 80;
+    err_t err = altcp_connect(pcb, ipaddr, port, altcp_connected_callback);
     if (err != ERR_OK) {
-        printf("TCP connect failed: %d\n", err);
-        tcp_close(pcb);
-        req_data->client->tcp_pcb = nullptr;
+        printf("ALTCP connect failed: %d\n", err);
+        altcp_close(pcb);
+        req_data->client->altcp_pcb = nullptr;
         delete req_data;
     }
 }
@@ -174,20 +201,22 @@ bool HttpClient::get(const std::string& url, std::function<void(const std::strin
     response_buffer.clear();
     
     std::string host, path;
-    parse_url(url, host, path);
+    bool is_https;
+    parse_url(url, host, path, is_https);
     
     if (host.empty()) {
         printf("Invalid URL: %s\n", url.c_str());
         return false;
     }
     
-    printf("Making HTTP request to %s%s\n", host.c_str(), path.c_str());
+    printf("Making %s request to %s%s\n", is_https ? "HTTPS" : "HTTP", host.c_str(), path.c_str());
     
     // Prepare request data
     http_request_data* req_data = new http_request_data();
     req_data->client = this;
     req_data->host = host;
     req_data->path = path;
+    req_data->is_https = is_https;
     
     // Resolve DNS
     ip_addr_t server_ip;

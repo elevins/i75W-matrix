@@ -48,21 +48,21 @@ void WeatherApp::draw(bool is_horizontal) {
         // These coordinates match the working Python implementation
         
         // Temperature row: (3,3), (13,3), (23,3) - Python coordinates  
-        draw_text_blue(3, 3, std::to_string(current_weather.min_temp), rotate);   // Low temp
-        draw_text_white(13, 3, std::to_string(current_weather.current_temp), rotate); // Current temp
-        draw_text_red(23, 3, std::to_string(current_weather.max_temp), rotate);   // High temp
+        drawText(3, 3, std::to_string(current_weather.min_temp), COLOR_BLUE);   // Low temp
+        drawText(13, 3, std::to_string(current_weather.current_temp), COLOR_WHITE); // Current temp
+        drawText(23, 3, std::to_string(current_weather.max_temp), COLOR_RED);   // High temp
         
         // Rain row: (3,10), (21,10) - Python coordinates
-        draw_text_white(3, 10, "RAIN", rotate);
-        draw_text_white(21, 10, std::to_string(current_weather.rain_chance) + "%", rotate);
+        drawText(3, 10, "RAIN", COLOR_WHITE);
+        drawText(21, 10, std::to_string(current_weather.rain_chance) + "%", COLOR_WHITE);
         
         // Sunrise/sunset row: (3,17), (21,17) - Python coordinates  
-        draw_text_white(3, 17, "RISE", rotate);
-        draw_text_white(21, 17, current_weather.sunrise, rotate);
+        drawText(3, 17, "RISE", COLOR_WHITE);
+        drawText(21, 17, current_weather.sunrise, COLOR_WHITE);
         
         // Humidity row: (3,24), (37,24) - Python coordinates
-        draw_text_white(3, 24, "HUMIDITY", rotate);
-        draw_text_white(37, 24, std::to_string(current_weather.humidity) + "%", rotate);
+        drawText(3, 24, "HUMIDITY", COLOR_WHITE);
+        drawText(37, 24, std::to_string(current_weather.humidity) + "%", COLOR_WHITE);
         
         // Weather icon: (42,1) - 2px up, 2px left from previous position
         ::draw_weather_icon(42, 1, current_weather.icon_code, rotate);
@@ -74,13 +74,13 @@ void WeatherApp::draw(bool is_horizontal) {
             int y_temp = y_day + 6;      // Temperature position (reduced gap from 8 to 6)
             
             // Draw day name in white using vertical rotation (moved 1 pixel right)
-            draw_text_white_mode(2, y_day, forecast_data[i].day_name, RotationMode::VERTICAL_CLOCKWISE);
+            drawText(2, y_day, forecast_data[i].day_name, COLOR_WHITE, RotationMode::VERTICAL_CLOCKWISE);
             
             // Draw low temperature in blue using vertical rotation (moved slightly right)
-            draw_text_blue_mode(13, y_temp, std::to_string(forecast_data[i].min_temp), RotationMode::VERTICAL_CLOCKWISE);
+            drawText(13, y_temp, std::to_string(forecast_data[i].min_temp), COLOR_BLUE, RotationMode::VERTICAL_CLOCKWISE);
             
             // Draw high temperature in red using vertical rotation (moved slightly right)
-            draw_text_red_mode(23, y_temp, std::to_string(forecast_data[i].max_temp), RotationMode::VERTICAL_CLOCKWISE);
+            drawText(23, y_temp, std::to_string(forecast_data[i].max_temp), COLOR_RED, RotationMode::VERTICAL_CLOCKWISE);
         }
     }
 }
