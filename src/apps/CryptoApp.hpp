@@ -10,6 +10,9 @@ public:
     void draw(bool is_horizontal) override;
     void handle_button_press(bool is_horizontal) override;
     
+    // Initialize API data immediately on startup
+    void initialize_api_data();
+    
 private:
     std::vector<AssetData> crypto_assets;
     

@@ -128,21 +128,202 @@ if (netif_default != NULL) {
 }
 ```
 
-## Main Loop Integration
+## Main Loop Integration with HTTPS Service
 
 ```cpp
+// Global HTTPS service instance
+HTTPSService https_service;
+
 while (true) {
-    // WiFi polling must happen regularly
-    if (wifi_connected) {
-        cyw43_arch_poll();
-    }
+    // 1. HTTPS service polling (includes WiFi polling internally)
+    https_service.poll();
     
-    // Application logic
+    // 2. Application control polling
     poll_controls();
+    
+    // 3. Handle encoder app switching and button presses
+    handle_user_input();
+    
+    // 4. Update display based on current app
     update_display();
     
-    // 10Hz update rate works well
+    // 10Hz update rate works well for all systems
     sleep_ms(100);
+}
+```
+
+### **HTTPS Service Integration Details**
+The `HTTPSService` class handles all networking internally:
+```cpp
+void HTTPSService::poll() {
+    // Poll WiFi connection status
+    cyw43_arch_poll();
+    
+    // Poll HTTPS requests (DNS, TLS, HTTP state machines)
+    https_poll(https_handle);
+    
+    // Handle connection state changes
+    update_connection_status();
+}
+```
+
+### **C/C++ Header Isolation Pattern**
+To avoid conflicts between PNGdec (`#define local static`) and lwIP headers:
+
+**C Wrapper (`https_c_wrapper.h/c`):**
+```c
+// https_c_wrapper.h - Pure C interface, no lwIP headers exposed
+typedef struct https_service_internal* https_handle_t;
+typedef struct https_request_config {
+    const char* hostname;
+    const char* path;
+    void (*success_callback)(const char* response, void* user_data);
+    void (*error_callback)(const char* error, void* user_data);
+    void* user_data;
+} https_request_config_t;
+
+// Pure C functions
+https_handle_t https_init(void);
+int https_wifi_init(https_handle_t handle, const char* ssid, const char* password);
+int https_request(https_handle_t handle, const https_request_config_t* config);
+void https_poll(https_handle_t handle);
+```
+
+**C++ Wrapper (`HTTPSService.hpp`):**
+```cpp
+// HTTPSService.hpp - Clean C++ interface, no lwIP headers
+#include <string>
+#include <functional>
+
+class HTTPSService {
+public:
+    using SuccessCallback = std::function<void(const std::string&)>;
+    using ErrorCallback = std::function<void(const std::string&)>;
+    
+    bool initialize();
+    void request(const std::string& hostname, const std::string& path, 
+                SuccessCallback success_cb, ErrorCallback error_cb);
+    void poll();
+    
+private:
+    void* https_handle;  // Opaque handle to C implementation
+};
+```
+
+### **Complete Initialization Sequence**
+```cpp
+int main() {
+    stdio_init_all();
+    
+    // 1. Initialize display first (prevents GPIO conflicts)
+    printf("Initializing display...\n");
+    hub75.start(dma_complete);
+    
+    // 2. Show connecting screen immediately  
+    graphics.set_pen(0, 0, 0);
+    graphics.clear();
+    drawText(3, 10, "Connecting WiFi...", COLOR_WHITE);
+    hub75.update(&graphics);
+    
+    // 3. Initialize HTTPS service (handles WiFi internally)
+    printf("Initializing HTTPS service...\n");
+    if (https_service.initialize()) {
+        printf("HTTPS service initialized successfully!\n");
+        
+        // Wait for IP assignment and show status
+        while (!cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA)) {
+            sleep_ms(100);
+        }
+        
+        // Display IP address info
+        if (netif_default != NULL) {
+            const ip4_addr_t *ip = netif_ip4_addr(netif_default);
+            uint32_t ip_addr = ip4_addr_get_u32(ip);
+            printf("IP Address: %u.%u.%u.%u\n", 
+                   ip_addr & 0xFF, (ip_addr >> 8) & 0xFF, 
+                   (ip_addr >> 16) & 0xFF, (ip_addr >> 24) & 0xFF);
+        }
+        
+        // Show success screen
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+        drawText(3, 8, "HTTPS Ready!", COLOR_WHITE);
+        drawText(3, 18, "Starting app...", COLOR_WHITE);
+        hub75.update(&graphics);
+        sleep_ms(2000);
+        
+        // 4. Initialize all API data immediately on startup
+        printf("=== INITIALIZING ALL APIs ON STARTUP ===\n");
+        weather_app.initialize_api_data();
+        stock_app.initialize_api_data();
+        crypto_app.initialize_api_data();
+        printf("=== API INITIALIZATION REQUESTS SENT ===\n");
+        
+    } else {
+        printf("HTTPS service initialization failed\n");
+        // Show error but continue with offline mode
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+        drawText(3, 8, "WiFi Failed!", COLOR_RED);
+        drawText(3, 18, "Using offline...", COLOR_WHITE);
+        hub75.update(&graphics);
+        sleep_ms(2000);
+    }
+
+    // 5. Initialize GPIO controls last (polling only, no interrupts)
+    printf("Initializing controls (polling mode)...\n");
+    gpio_init(ENCODER_A_PIN);
+    gpio_init(ENCODER_B_PIN);
+    gpio_init(ENCODER_SW_PIN);
+    gpio_init(TILT_SWITCH_PIN);
+    
+    gpio_set_dir(ENCODER_A_PIN, GPIO_IN);
+    gpio_set_dir(ENCODER_B_PIN, GPIO_IN);
+    gpio_set_dir(ENCODER_SW_PIN, GPIO_IN);
+    gpio_set_dir(TILT_SWITCH_PIN, GPIO_IN);
+    
+    gpio_pull_up(ENCODER_A_PIN);
+    gpio_pull_up(ENCODER_B_PIN);
+    gpio_pull_up(ENCODER_SW_PIN);
+    gpio_pull_up(TILT_SWITCH_PIN);
+    
+    // 6. Main loop with integrated HTTPS polling
+    while (true) {
+        // Poll HTTPS service (includes WiFi polling internally)
+        https_service.poll();
+        
+        // Poll all controls (no interrupts to avoid CYW43 conflicts)
+        poll_controls();
+        
+        // Handle encoder app switching
+        handle_app_switching();
+        
+        // Handle button press
+        handle_button_press();
+        
+        // Clear screen and draw current app
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+        
+        // Draw current app based on tilt (true = horizontal, false = vertical)
+        switch (current_app) {
+            case APP_WEATHER:
+                weather_app.draw(tilt_active);
+                break;
+            case APP_STOCKS:
+                stock_app.draw(tilt_active);
+                break;
+            case APP_CRYPTO:
+                crypto_app.draw(tilt_active);
+                break;
+        }
+        
+        // Update display
+        hub75.update(&graphics);
+        
+        // Update at 10Hz
+        sleep_ms(100);
+    }
 }
 ```
 

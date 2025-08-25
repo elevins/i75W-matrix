@@ -1,9 +1,12 @@
 #include "WeatherApp.hpp"
 #include "../utils/text_renderer.h"
+#include "../core/common.hpp"
+#include "../services/HTTPSService.hpp"
 #include <sstream>
 #include <iomanip>
+#include <cstdio>
 
-WeatherApp::WeatherApp() {
+WeatherApp::WeatherApp() : api_data_loading(false), api_data_available(false), startup_api_completed(false) {
     initialize_mock_data();
     load_weather_icons();
 }
@@ -40,8 +43,69 @@ void WeatherApp::load_weather_icons() {
     // This will require adding PNG decoding capabilities
 }
 
+void WeatherApp::request_weather_data() {
+    if (!api_data_loading && https_service.is_connected()) {
+        api_data_loading = true;
+        printf("Requesting weather data from Open-Meteo API...\n");
+        
+        // Open-Meteo API - Free, no API key required
+        // NYC coordinates: 40.7128°N 74.0060°W
+        std::string path = "/v1/forecast?latitude=40.7128&longitude=-74.0060&current_weather=true&hourly=temperature_2m,relative_humidity_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min&timezone=America/New_York&temperature_unit=fahrenheit";
+        
+        https_service.request("api.open-meteo.com", path,
+            [this](const std::string& response) {
+                this->parse_weather_response(response);
+            },
+            [this](const std::string& error) {
+                this->on_weather_error(error);
+            },
+            15000  // 15 second timeout
+        );
+    }
+}
+
+void WeatherApp::parse_weather_response(const std::string& response) {
+    printf("=== WEATHER API RESPONSE ===\n");
+    printf("Response length: %zu bytes\n", response.length());
+    printf("Response content: %s\n", response.c_str());
+    printf("=== END RESPONSE ===\n");
+    
+    // Mark as successful - detailed JSON parsing can be added later
+    api_data_loading = false;
+    api_data_available = true;
+    startup_api_completed = true;
+    
+    // TODO: Parse Open-Meteo JSON response and update current_weather structure
+    // Open-Meteo format: {"current_weather":{"temperature":72.5,"windspeed":3.2,...}}
+    printf("Weather API response received successfully!\n");
+}
+
+void WeatherApp::on_weather_error(const std::string& error) {
+    printf("=== WEATHER API ERROR ===\n");
+    printf("Error: %s\n", error.c_str());
+    printf("=== END ERROR ===\n");
+    api_data_loading = false;
+    // Keep using mock data
+}
+
+void WeatherApp::initialize_api_data() {
+    printf("WeatherApp: Initializing API data on startup...\n");
+    request_weather_data();
+}
+
 void WeatherApp::draw(bool is_horizontal) {
     bool rotate = true; // Always rotate 180° for proper orientation
+    
+    // Only do periodic refresh after startup API is completed
+    if (startup_api_completed) {
+        static uint32_t last_request_time = 0;
+        uint32_t current_time = time_us_32() / 1000000; // Convert to seconds
+        if (current_time - last_request_time > 300) { // 5 minutes
+            printf("WeatherApp: Starting periodic refresh (5min timer)\n");
+            request_weather_data();
+            last_request_time = current_time;
+        }
+    }
     
     if (is_horizontal) {
         // Horizontal layout using Python PIL reference coordinates
@@ -66,6 +130,11 @@ void WeatherApp::draw(bool is_horizontal) {
         
         // Weather icon: (42,1) - 2px up, 2px left from previous position
         ::draw_weather_icon(42, 1, current_weather.icon_code, rotate);
+        
+        // Show loading indicator if requesting data
+        if (api_data_loading) {
+            drawText(55, 25, "*", COLOR_WHITE);
+        }
         
     } else {
         // Vertical layout (32x64) - Weekly forecast view

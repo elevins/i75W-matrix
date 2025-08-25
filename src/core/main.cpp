@@ -7,6 +7,7 @@
 #include "../apps/StockApp.hpp"
 #include "../apps/CryptoApp.hpp"
 #include "../utils/text_renderer.h"
+#include "../services/HTTPSService.hpp"
 
 
 // GPIO pin definitions
@@ -26,9 +27,11 @@ WeatherApp weather_app;
 StockApp stock_app;
 CryptoApp crypto_app;
 
+// HTTPS Service
+HTTPSService https_service;
+
 // Global state
 AppType current_app = APP_WEATHER;
-bool wifi_connected = false;
 volatile bool tilt_active = false;
 volatile bool encoder_button_clicked = false;
 
@@ -98,34 +101,22 @@ void __isr dma_complete() {
 int main() {
     stdio_init_all();
     
-    // Initialize CYW43 first (EXACT working sequence)
-    printf("Initializing WiFi (CYW43)...\n");
-    if (cyw43_arch_init()) {
-        printf("ERROR: WiFi init failed!\n");
-        return 1;
-    }
-    cyw43_arch_enable_sta_mode();
-    printf("WiFi initialized successfully\n");
-    
-    // Initialize display after WiFi (EXACT working sequence)
+    // Initialize display first
     printf("Initializing display...\n");
     hub75.start(dma_complete);
     
-    // Show connecting screen using proper font and rotation (EXACT working code)
+    // Show connecting screen
     graphics.set_pen(0, 0, 0);
     graphics.clear();
     drawText(3, 10, "Connecting WiFi...", COLOR_WHITE);
     hub75.update(&graphics);
     
-    // Connect to WiFi (EXACT working sequence)
-    printf("Connecting to EddyBsHouse...\n");
-    int result = cyw43_arch_wifi_connect_timeout_ms("EddyBsHouse", "swiftwater496", CYW43_AUTH_WPA2_AES_PSK, 30000);
-    
-    if (result == 0) {
-        printf("WiFi connected successfully!\n");
-        wifi_connected = true;
+    // Initialize HTTPS service (handles WiFi init internally)
+    printf("Initializing HTTPS service...\n");
+    if (https_service.initialize()) {
+        printf("HTTPS service initialized successfully!\n");
         
-        // Get IP address (EXACT working code)
+        // Get IP address info
         while (!cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA)) {
             sleep_ms(100);
         }
@@ -138,18 +129,32 @@ int main() {
                    (ip_addr >> 16) & 0xFF, (ip_addr >> 24) & 0xFF);
         }
         
-        // Show WiFi success briefly using proper font and rotation (EXACT working code)
+        // Show success screen
         graphics.set_pen(0, 0, 0);
         graphics.clear();
-        drawText(3, 8, "WiFi Connected!", COLOR_WHITE);
+        drawText(3, 8, "HTTPS Ready!", COLOR_WHITE);
         drawText(3, 18, "Starting app...", COLOR_WHITE);
         hub75.update(&graphics);
         sleep_ms(2000);
-        printf("WiFi success screen shown\n");
+        printf("HTTPS service ready\n");
+        
+        // Initialize all API data immediately on startup
+        printf("=== INITIALIZING ALL APIs ON STARTUP ===\n");
+        weather_app.initialize_api_data();
+        stock_app.initialize_api_data();
+        crypto_app.initialize_api_data();
+        printf("=== API INITIALIZATION REQUESTS SENT ===\n");
         
     } else {
-        printf("WiFi connection failed with code %d\n", result);
-        wifi_connected = false;
+        printf("HTTPS service initialization failed\n");
+        
+        // Show error screen but continue
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+        drawText(3, 8, "WiFi Failed!", COLOR_RED);
+        drawText(3, 18, "Using offline...", COLOR_WHITE);
+        hub75.update(&graphics);
+        sleep_ms(2000);
     }
 
 
@@ -181,10 +186,8 @@ int main() {
     
     // Main loop with controls
     while (true) {
-        // Poll WiFi
-        if (wifi_connected) {
-            cyw43_arch_poll();
-        }
+        // Poll HTTPS service (includes WiFi polling)
+        https_service.poll();
         
         // Poll all controls (no interrupts)
         poll_controls();

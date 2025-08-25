@@ -25,6 +25,10 @@ add_executable(${NAME}
     src/apps/StockApp.cpp
     src/apps/CryptoApp.cpp
     src/utils/text_renderer.cpp
+    src/utils/encoder.cpp
+    # HTTPS Service - C wrapper first, then C++ wrapper to ensure proper linking
+    src/services/https_c_wrapper.c
+    src/services/HTTPSService.cpp
 )
 
 # Add lwIP config directory
@@ -50,6 +54,8 @@ target_link_libraries(${NAME}
     pngdec
     hardware_pwm
     pico_cyw43_arch_lwip_poll
+    pico_lwip_mbedtls
+    pico_mbedtls
 )
 
 # create map/bin/hex file etc.

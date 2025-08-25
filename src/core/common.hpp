@@ -4,9 +4,22 @@
 #include "libraries/pico_graphics/pico_graphics.hpp"
 #include "libraries/interstate75/interstate75.hpp"
 #include "libraries/pico_vector/pico_vector.hpp"
-#include "libraries/pngdec/PNGdec.h"
 #include <string>
 #include <vector>
+
+// Include PNG decoder with macro isolation to prevent conflicts
+#ifndef PNGDEC_INCLUDED
+#define PNGDEC_INCLUDED
+#ifdef local
+#define LOCAL_WAS_DEFINED local
+#undef local
+#endif
+#include "libraries/pngdec/PNGdec.h"
+#ifdef LOCAL_WAS_DEFINED
+#define local LOCAL_WAS_DEFINED
+#undef LOCAL_WAS_DEFINED
+#endif
+#endif
 
 using namespace pimoroni;
 
@@ -19,8 +32,9 @@ extern PicoGraphics_PenRGB888 graphics;
 extern Hub75 hub75;
 extern PicoVector picovector;
 
-// WiFi status from main.cpp
-extern bool wifi_connected;
+// HTTPS Service from main.cpp
+class HTTPSService;
+extern HTTPSService https_service;
 
 // Application types
 enum AppType {

@@ -1,4 +1,5 @@
 #include "common.hpp"
+#include "../services/HTTPSService.hpp"
 #include "../assets/weather/weather_01d_png_new.h"
 #include "../assets/weather/weather_01n_png_new.h"
 #include "../assets/weather/weather_02d_png_new.h"
@@ -275,7 +276,7 @@ void draw_weather_icon(int x, int y, const std::string& icon_code, bool rotate) 
 }
 
 void draw_wifi_status(int x, int y, bool rotate) {
-    if (wifi_connected) {
+    if (https_service.is_connected()) {
         // Green - connected
         draw_pixel(x, y, 0, 255, 0, rotate);
     } else {

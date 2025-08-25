@@ -31,6 +31,7 @@ void drawChar(int visual_x, int visual_y, char c, uint8_t r, uint8_t g, uint8_t 
 }
 
 // Main unified text drawing function
+//TODO add text alignment left/right to this for prettiness 
 void drawText(int x, int y, const std::string& text, uint8_t r, uint8_t g, uint8_t b, RotationMode rotation) {
     int current_x = x;
     

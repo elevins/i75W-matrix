@@ -25,16 +25,6 @@ physical_x = 63 - visual_x
 physical_y = 31 - visual_y
 ```
 
-## Color Definitions
-```cpp
-// Standard colors used in weather app
-RGB white = {255, 255, 255};      // Primary text
-RGB blue = {100, 150, 255};       // Low temperature
-RGB red = {255, 100, 100};        // High temperature  
-RGB yellow = {255, 255, 0};       // Accent/highlight
-RGB green = {0, 255, 0};          // Status indicator
-```
-
 ## GPIO Pin Assignments
 
 ### Control Pins (Safe from CYW43 conflicts)

@@ -110,3 +110,8 @@ void StockApp::handle_button_press(bool is_horizontal) {
         sub_state = (sub_state + 1) % stock_assets.size();
     }
 }
+
+void StockApp::initialize_api_data() {
+    printf("StockApp: API initialization placeholder - using mock data\n");
+    // TODO: Add real stock API calls (e.g., Alpha Vantage, Yahoo Finance)
+}

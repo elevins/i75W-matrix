@@ -110,3 +110,8 @@ void CryptoApp::handle_button_press(bool is_horizontal) {
         sub_state = (sub_state + 1) % crypto_assets.size();
     }
 }
+
+void CryptoApp::initialize_api_data() {
+    printf("CryptoApp: API initialization placeholder - using mock data\n");
+    // TODO: Add real crypto API calls (e.g., CoinGecko, CoinMarketCap)
+}
