@@ -1,5 +1,4 @@
 #include "common.hpp"
-#include "../utils/network_manager.h"
 #include "../assets/weather/weather_01d_png_new.h"
 #include "../assets/weather/weather_01n_png_new.h"
 #include "../assets/weather/weather_02d_png_new.h"
@@ -23,8 +22,8 @@
 const int DISPLAY_WIDTH = 64;
 const int DISPLAY_HEIGHT = 32;
 
-// Global network manager reference
-NetworkManager* global_network_manager = nullptr;
+// WiFi status is declared in main.cpp
+// extern bool wifi_connected; (declared in common.hpp)
 
 // Function to rotate coordinates 180 degrees for upside-down display
 Point rotate_180(int x, int y) {
@@ -276,31 +275,11 @@ void draw_weather_icon(int x, int y, const std::string& icon_code, bool rotate) 
 }
 
 void draw_wifi_status(int x, int y, bool rotate) {
-    if (!global_network_manager) {
-        // No network manager - draw gray pixel
-        draw_pixel(x, y, 128, 128, 128, rotate);
-        return;
-    }
-    
-    NetworkState state = global_network_manager->get_state();
-    
-    switch (state) {
-        case NetworkState::CONNECTED:
-            // Green - connected
-            draw_pixel(x, y, 0, 255, 0, rotate);
-            break;
-        case NetworkState::CONNECTING:
-            // Yellow - connecting
-            draw_pixel(x, y, 255, 255, 0, rotate);
-            break;
-        case NetworkState::ERROR:
-            // Red - error
-            draw_pixel(x, y, 255, 0, 0, rotate);
-            break;
-        case NetworkState::DISCONNECTED:
-        default:
-            // Blue - disconnected
-            draw_pixel(x, y, 0, 0, 255, rotate);
-            break;
+    if (wifi_connected) {
+        // Green - connected
+        draw_pixel(x, y, 0, 255, 0, rotate);
+    } else {
+        // Red - disconnected
+        draw_pixel(x, y, 255, 0, 0, rotate);
     }
 }

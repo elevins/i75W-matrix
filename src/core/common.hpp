@@ -19,9 +19,8 @@ extern PicoGraphics_PenRGB888 graphics;
 extern Hub75 hub75;
 extern PicoVector picovector;
 
-// Forward declaration
-class NetworkManager;
-extern NetworkManager* global_network_manager;
+// WiFi status from main.cpp
+extern bool wifi_connected;
 
 // Application types
 enum AppType {
